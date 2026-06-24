@@ -44,7 +44,7 @@ export class ThreadService {
 		await checkPermission(Permissions.CREATE_THREADS);
 
 		if (data.source_message_id) {
-			const existingThread = await this.findThreadForSourceMessage(channelId, data.source_message_id);
+			const existingThread = await this.findThreadForSourceMessage(channelId, data.source_message_id.toString());
 			if (existingThread) throw new InvalidChannelTypeError();
 		}
 
@@ -261,7 +261,7 @@ export function mapThreadToResponse(thread: Channel): ThreadResponse {
 		last_pin_timestamp: thread.lastPinTimestamp?.toISOString() ?? null,
 		permission_overwrites: Array.from(thread.permissionOverwrites).map(([id, ow]) => ({
 			id: id.toString(),
-			type: ow.type,
+			type: ow.type as 0 | 1,
 			allow: (ow.allow ?? 0n).toString(),
 			deny: (ow.deny ?? 0n).toString(),
 		})),

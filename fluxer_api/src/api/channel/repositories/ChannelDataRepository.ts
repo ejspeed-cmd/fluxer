@@ -5,7 +5,7 @@ import {BatchBuilder, fetchMany, fetchManyInChunks, fetchOne, upsertOne} from '.
 import {Db} from '../../database/CassandraTypes';
 import {buildPatchFromData, executeVersionedUpdate} from '../../database/CassandraVersionedUpdate';
 import type {ChannelRow, ThreadMemberRow} from '../../database/types/ChannelTypes';
-import {CHANNEL_COLUMNS, THREAD_MEMBER_COLUMNS} from '../../database/types/ChannelTypes';
+import {CHANNEL_COLUMNS} from '../../database/types/ChannelTypes';
 import {Logger} from '../../Logger';
 import {Channel} from '../../models/Channel';
 import {Channels, ChannelsByGuild, PrivateChannels, ThreadMembers, ThreadsByChannel} from '../../Tables';
