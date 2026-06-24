@@ -28,6 +28,7 @@ export const ChannelTypeSchema = withOpenApiType(
 			[ChannelTypes.GUILD_CATEGORY, 'GUILD_CATEGORY', 'A category that contains channels'],
 			[ChannelTypes.GUILD_LINK, 'GUILD_LINK', 'A link channel for external resources'],
 			[ChannelTypes.DM_PERSONAL_NOTES, 'DM_PERSONAL_NOTES', 'Personal notes DM channel'],
+			[ChannelTypes.GUILD_THREAD, 'GUILD_THREAD', 'A thread within a guild text channel'],
 		],
 		'The type of the channel',
 	),
