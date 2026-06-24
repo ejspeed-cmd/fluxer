@@ -2,6 +2,7 @@
 
 import {type ChannelType, ChannelTypes} from '@fluxer/constants/src/ChannelConstants';
 import {VOICE_CHANNEL_CONNECTION_LIMIT_DEFAULT} from '@fluxer/constants/src/LimitConstants';
+import type {ThreadState} from '@fluxer/constants/src/ChannelConstants';
 import type {ChannelID, GuildID, MessageID, RoleID, UserID} from '../BrandedTypes';
 import type {ChannelRow, PermissionOverwrite} from '../database/types/ChannelTypes';
 import {ChannelPermissionOverwrite} from './ChannelPermissionOverwrite';
@@ -34,6 +35,15 @@ export class Channel {
 	readonly isSoftDeleted: boolean;
 	readonly indexedAt: Date | null;
 	readonly version: number;
+	readonly threadParentChannelId: ChannelID | null;
+	readonly threadCreatorId: UserID | null;
+	readonly threadCreatorUsername: string | null;
+	readonly threadState: ThreadState | null;
+	readonly threadExpiresAt: Date | null;
+
+	get isThread(): boolean {
+		return this.type === ChannelTypes.GUILD_THREAD;
+	}
 
 	constructor(row: ChannelRow) {
 		this.id = row.channel_id;
@@ -70,6 +80,11 @@ export class Channel {
 		this.isSoftDeleted = row.soft_deleted;
 		this.indexedAt = row.indexed_at ?? null;
 		this.version = row.version;
+		this.threadParentChannelId = row.thread_parent_channel_id ?? null;
+		this.threadCreatorId = row.thread_creator_id ?? null;
+		this.threadCreatorUsername = row.thread_creator_username ?? null;
+		this.threadState = (row.thread_state ?? null) as ThreadState | null;
+		this.threadExpiresAt = row.thread_expires_at ?? null;
 	}
 
 	toRow(): ChannelRow {
@@ -109,6 +124,11 @@ export class Channel {
 			soft_deleted: this.isSoftDeleted,
 			indexed_at: this.indexedAt,
 			version: this.version,
+			thread_parent_channel_id: this.threadParentChannelId,
+			thread_creator_id: this.threadCreatorId,
+			thread_creator_username: this.threadCreatorUsername,
+			thread_state: this.threadState,
+			thread_expires_at: this.threadExpiresAt,
 		};
 	}
 }

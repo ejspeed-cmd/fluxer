@@ -3531,6 +3531,26 @@
 				{
 					"name": "content_warning_text",
 					"type": "text"
+				},
+				{
+					"name": "thread_parent_channel_id",
+					"type": "bigint"
+				},
+				{
+					"name": "thread_creator_id",
+					"type": "bigint"
+				},
+				{
+					"name": "thread_creator_username",
+					"type": "text"
+				},
+				{
+					"name": "thread_state",
+					"type": "int"
+				},
+				{
+					"name": "thread_expires_at",
+					"type": "timestamp"
 				}
 			],
 			"primary_key": "((channel_id, soft_deleted))",
@@ -6576,10 +6596,56 @@
 				{
 					"name": "nsfw_emojis",
 					"type": "set<bigint>"
+				},
+				{
+					"name": "thread_id",
+					"type": "bigint"
+				},
+				{
+					"name": "thread_name",
+					"type": "text"
 				}
 			],
 			"primary_key": "((channel_id, bucket), message_id)",
 			"options": "CLUSTERING ORDER BY (message_id DESC)"
+		},
+		{
+			"name": "thread_members",
+			"columns": [
+				{
+					"name": "thread_id",
+					"type": "bigint"
+				},
+				{
+					"name": "user_id",
+					"type": "bigint"
+				},
+				{
+					"name": "joined_at",
+					"type": "timestamp"
+				},
+				{
+					"name": "notification_override",
+					"type": "int"
+				}
+			],
+			"primary_key": "((thread_id), user_id)",
+			"options": ""
+		},
+		{
+			"name": "threads_by_channel_id",
+			"columns": [
+				{
+					"name": "channel_id",
+					"type": "bigint"
+				},
+				{
+					"name": "thread_id",
+					"type": "bigint"
+				}
+			],
+			"primary_key": "((channel_id), thread_id)",
+			"options": "CLUSTERING ORDER BY (thread_id DESC)"
 		},
 		{
 			"name": "messages_by_author_id_v2",

@@ -4,11 +4,11 @@ import type {ChannelID, GuildID, MessageID, UserID} from '../../BrandedTypes';
 import {BatchBuilder, fetchMany, fetchManyInChunks, fetchOne, upsertOne} from '../../database/CassandraQueryExecution';
 import {Db} from '../../database/CassandraTypes';
 import {buildPatchFromData, executeVersionedUpdate} from '../../database/CassandraVersionedUpdate';
-import type {ChannelRow} from '../../database/types/ChannelTypes';
-import {CHANNEL_COLUMNS} from '../../database/types/ChannelTypes';
+import type {ChannelRow, ThreadMemberRow} from '../../database/types/ChannelTypes';
+import {CHANNEL_COLUMNS, THREAD_MEMBER_COLUMNS} from '../../database/types/ChannelTypes';
 import {Logger} from '../../Logger';
 import {Channel} from '../../models/Channel';
-import {Channels, ChannelsByGuild, PrivateChannels} from '../../Tables';
+import {Channels, ChannelsByGuild, PrivateChannels, ThreadMembers, ThreadsByChannel} from '../../Tables';
 import {
 	privateChannelFanOutTargets,
 	privateChannelLastMessageIdPatch,
@@ -30,6 +30,19 @@ const FETCH_OPEN_PRIVATE_CHANNEL_TARGET = PrivateChannels.selectCql({
 	columns: ['user_id'],
 	where: [PrivateChannels.where.eq('user_id'), PrivateChannels.where.eq('channel_id')],
 	limit: 1,
+});
+
+const FETCH_THREADS_BY_CHANNEL = ThreadsByChannel.select({
+	where: [ThreadsByChannel.where.eq('channel_id')],
+});
+
+const FETCH_THREAD_MEMBER = ThreadMembers.select({
+	where: [ThreadMembers.where.eq('thread_id'), ThreadMembers.where.eq('user_id')],
+	limit: 1,
+});
+
+const FETCH_THREAD_MEMBERS = ThreadMembers.select({
+	where: [ThreadMembers.where.eq('thread_id')],
 });
 
 export class ChannelDataRepository extends IChannelDataRepository {
@@ -204,5 +217,69 @@ export class ChannelDataRepository extends IChannelDataRepository {
 			channel_id: bigint;
 		}>(FETCH_GUILD_CHANNELS_BY_GUILD_ID.bind({guild_id: guildId}));
 		return guildChannels.length;
+	}
+
+	async upsertThreadByChannel(channelId: ChannelID, threadId: ChannelID): Promise<void> {
+		await upsertOne(
+			ThreadsByChannel.upsertAll({
+				channel_id: channelId,
+				thread_id: threadId,
+			}),
+		);
+	}
+
+	async deleteThreadByChannel(channelId: ChannelID, threadId: ChannelID): Promise<void> {
+		await upsertOne(
+			ThreadsByChannel.deleteByPk({
+				channel_id: channelId,
+				thread_id: threadId,
+			}),
+		);
+	}
+
+	async listThreadsByChannel(channelId: ChannelID, limit = 50, before?: ChannelID): Promise<Array<ChannelID>> {
+		const rows = await fetchMany<{channel_id: ChannelID; thread_id: ChannelID}>(
+			FETCH_THREADS_BY_CHANNEL.bind({channel_id: channelId}),
+		);
+		let result = rows.map((r) => r.thread_id);
+		if (before !== undefined) {
+			result = result.filter((id) => id < before);
+		}
+		return result.slice(0, limit);
+	}
+
+	async upsertThreadMember(params: {
+		threadId: ChannelID;
+		userId: UserID;
+		joinedAt: Date;
+		notificationOverride: number | null;
+	}): Promise<void> {
+		await upsertOne(
+			ThreadMembers.upsertAll({
+				thread_id: params.threadId,
+				user_id: params.userId,
+				joined_at: params.joinedAt,
+				notification_override: params.notificationOverride,
+			} as ThreadMemberRow),
+		);
+	}
+
+	async removeThreadMember(threadId: ChannelID, userId: UserID): Promise<void> {
+		await upsertOne(
+			ThreadMembers.deleteByPk({
+				thread_id: threadId,
+				user_id: userId,
+			}),
+		);
+	}
+
+	async listThreadMembers(threadId: ChannelID): Promise<Array<{userId: UserID; joinedAt: Date}>> {
+		const rows = await fetchMany<ThreadMemberRow>(FETCH_THREAD_MEMBERS.bind({thread_id: threadId}));
+		return rows.map((r) => ({userId: r.user_id, joinedAt: r.joined_at}));
+	}
+
+	async isThreadMember(threadId: ChannelID, userId: UserID): Promise<boolean> {
+		const row = await fetchOne<ThreadMemberRow>(FETCH_THREAD_MEMBER.bind({thread_id: threadId, user_id: userId}));
+		return row !== null;
 	}
 }

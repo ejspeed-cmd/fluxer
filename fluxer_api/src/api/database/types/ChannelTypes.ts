@@ -46,6 +46,11 @@ export interface ChannelRow {
 	soft_deleted: boolean;
 	indexed_at: Nullish<Date>;
 	version: number;
+	thread_parent_channel_id?: Nullish<ChannelID>;
+	thread_creator_id?: Nullish<UserID>;
+	thread_creator_username?: Nullish<string>;
+	thread_state?: Nullish<number>;
+	thread_expires_at?: Nullish<Date>;
 }
 
 export interface InviteRow {
@@ -133,6 +138,11 @@ export const CHANNEL_COLUMNS = [
 	'soft_deleted',
 	'indexed_at',
 	'version',
+	'thread_parent_channel_id',
+	'thread_creator_id',
+	'thread_creator_username',
+	'thread_state',
+	'thread_expires_at',
 ] as const satisfies ReadonlyArray<keyof ChannelRow>;
 
 export interface ChannelsByGuildRow {
@@ -194,3 +204,27 @@ export const PRIVATE_CHANNEL_COLUMNS = [
 export const DM_STATE_COLUMNS = ['hi_user_id', 'lo_user_id', 'channel_id'] as const satisfies ReadonlyArray<
 	keyof DmStateRow
 >;
+
+export interface ThreadMemberRow {
+	thread_id: ChannelID;
+	user_id: UserID;
+	joined_at: Date;
+	notification_override: Nullish<number>;
+}
+
+export const THREAD_MEMBER_COLUMNS = [
+	'thread_id',
+	'user_id',
+	'joined_at',
+	'notification_override',
+] as const satisfies ReadonlyArray<keyof ThreadMemberRow>;
+
+export interface ThreadsByChannelRow {
+	channel_id: ChannelID;
+	thread_id: ChannelID;
+}
+
+export const THREADS_BY_CHANNEL_COLUMNS = [
+	'channel_id',
+	'thread_id',
+] as const satisfies ReadonlyArray<keyof ThreadsByChannelRow>;

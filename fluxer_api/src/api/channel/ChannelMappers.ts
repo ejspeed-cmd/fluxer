@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {ChannelTypes} from '@fluxer/constants/src/ChannelConstants';
+import {ThreadStates} from '@fluxer/constants/src/ChannelConstants';
 import type {
 	ChannelOverwriteResponse,
 	ChannelPartialResponse,
 	ChannelResponse,
+	ThreadResponse,
 } from '@fluxer/schema/src/domains/channel/ChannelSchemas';
 import type {UserID} from '../BrandedTypes';
 import type {UserCacheService} from '../infrastructure/UserCacheService';
@@ -131,6 +133,24 @@ function serializeGuildLinkChannel(channel: Channel, ctx: ContentWarningCtx): Ch
 	};
 }
 
+function serializeGuildThreadChannel(channel: Channel, ctx: ContentWarningCtx): ThreadResponse {
+	return {
+		...serializeBaseChannelFields(channel),
+		...serializeMessageableFields(channel),
+		guild_id: channel.guildId?.toString(),
+		name: channel.name ?? undefined,
+		parent_id: channel.threadParentChannelId?.toString() ?? null,
+		permission_overwrites: serializePermissionOverwrites(channel),
+		...serializeContentWarningFields(channel, ctx),
+		rate_limit_per_user: channel.rateLimitPerUser,
+		thread_state: channel.threadState ?? ThreadStates.OPEN,
+		thread_parent_channel_id: channel.threadParentChannelId?.toString() ?? '',
+		thread_creator_id: channel.threadCreatorId?.toString() ?? null,
+		thread_creator_username: channel.threadCreatorUsername ?? null,
+		thread_expires_at: channel.threadExpiresAt?.toISOString() ?? null,
+	};
+}
+
 function serializeDMChannel(channel: Channel): ChannelResponse {
 	return {
 		...serializeBaseChannelFields(channel),
@@ -206,6 +226,9 @@ export async function mapChannelToResponse(params: MapChannelToResponseParams): 
 			break;
 		case ChannelTypes.GUILD_LINK:
 			response = serializeGuildLinkChannel(channel, ctx);
+			break;
+		case ChannelTypes.GUILD_THREAD:
+			response = serializeGuildThreadChannel(channel, ctx);
 			break;
 		case ChannelTypes.DM:
 			response = serializeDMChannel(channel);

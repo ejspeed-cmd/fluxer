@@ -205,3 +205,33 @@ export interface Channel {
 	readonly rate_limit_per_user?: number;
 	readonly nicks?: Readonly<Record<string, string>>;
 }
+
+export const ThreadPreviewCard = z.object({
+	last_message_preview: z.string().nullish().describe('Truncated content of the last message in the thread'),
+	last_message_at: z.iso.datetime().nullish().describe('Timestamp of the last message in the thread'),
+	last_message_author_id: SnowflakeStringType.nullish().describe('User ID of the last message author'),
+	last_message_author_username: z.string().nullish().describe('Username of the last message author'),
+	last_message_author_avatar: z.string().nullish().describe('Avatar hash of the last message author'),
+});
+
+export type ThreadPreviewCard = z.infer<typeof ThreadPreviewCard>;
+
+export const ThreadResponse = ChannelResponse.extend({
+	thread_state: z.number().int().describe('Thread state: 0=open, 1=closed, 2=archived'),
+	thread_parent_channel_id: SnowflakeStringType.describe('ID of the parent channel this thread belongs to'),
+	thread_creator_id: SnowflakeStringType.nullish().describe('ID of the user who created the thread'),
+	thread_creator_username: z.string().nullish().describe('Username of the thread creator at time of creation'),
+	thread_expires_at: z.iso.datetime().nullish().describe('ISO 8601 timestamp when the thread auto-closes'),
+	thread_member_count: Int32Type.optional().describe('Approximate number of members in the thread'),
+}).merge(ThreadPreviewCard);
+
+export type ThreadResponse = z.infer<typeof ThreadResponse>;
+
+export const ThreadMemberResponse = z.object({
+	thread_id: SnowflakeStringType.describe('The thread ID'),
+	user_id: SnowflakeStringType.describe('The user ID'),
+	joined_at: z.iso.datetime().describe('When the user joined the thread'),
+	notification_override: z.number().int().nullish().describe('Per-thread notification override (null = inherit from channel)'),
+});
+
+export type ThreadMemberResponse = z.infer<typeof ThreadMemberResponse>;

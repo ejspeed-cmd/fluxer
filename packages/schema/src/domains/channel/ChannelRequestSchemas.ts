@@ -367,3 +367,43 @@ export const StreamPreviewUploadUrlResponseSchema = z.object({
 });
 
 export type StreamPreviewUploadUrlResponseSchema = z.infer<typeof StreamPreviewUploadUrlResponseSchema>;
+
+export const CreateThreadRequest = z.object({
+	name: createStringType(1, 100).describe('The name of the thread (1-100 characters)'),
+	expires_in_ms: z
+		.number()
+		.int()
+		.min(3_600_000)
+		.max(2_592_000_000)
+		.optional()
+		.describe('How long in milliseconds before the thread auto-closes (default: 7 days)'),
+	source_message_id: SnowflakeType.optional().describe('ID of the message that started this thread'),
+});
+
+export type CreateThreadRequest = z.infer<typeof CreateThreadRequest>;
+
+export const UpdateThreadRequest = z.object({
+	name: createStringType(1, 100).optional().describe('New thread name'),
+	state: z.number().int().min(0).max(2).optional().describe('Thread state: 0=open, 1=closed, 2=archived'),
+	expires_in_ms: z
+		.number()
+		.int()
+		.min(3_600_000)
+		.max(2_592_000_000)
+		.optional()
+		.describe('New auto-close duration from now in milliseconds'),
+});
+
+export type UpdateThreadRequest = z.infer<typeof UpdateThreadRequest>;
+
+export const ListThreadsQuery = z.object({
+	state: z
+		.enum(['open', 'closed', 'archived', 'all'])
+		.optional()
+		.default('all')
+		.describe('Filter threads by state (default: all)'),
+	limit: z.number().int().min(1).max(100).optional().default(50).describe('Max number of threads to return'),
+	before: SnowflakeType.optional().describe('Return threads created before this thread ID'),
+});
+
+export type ListThreadsQuery = z.infer<typeof ListThreadsQuery>;
