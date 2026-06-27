@@ -154,6 +154,8 @@ const MessageBaseResponseSchema = z.object({
 	message_snapshots: z.array(MessageSnapshotResponse).nullish().describe('Snapshots of forwarded messages'),
 	nonce: z.string().nullish().describe('A client-provided value for message deduplication'),
 	call: MessageCallResponse.nullish().describe('Call information if this message represents a call'),
+	thread_id: SnowflakeStringType.nullish().describe('The thread ID if this message started a thread'),
+	thread_name: z.string().nullish().describe('The name of the thread started from this message'),
 });
 
 type MessageBaseResponse = z.infer<typeof MessageBaseResponseSchema>;

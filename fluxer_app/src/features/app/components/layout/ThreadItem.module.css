@@ -1,0 +1,71 @@
+.threadItem {
+	display: flex;
+	align-items: center;
+	border-radius: 4px;
+	cursor: pointer;
+	height: 32px;
+	padding: 0 8px 0 32px;
+	position: relative;
+	user-select: none;
+}
+
+.threadItem:hover,
+.threadItemHoverable:hover {
+	background: var(--color-background-modifier-hover);
+}
+
+.threadItemSelected {
+	background: var(--color-background-modifier-selected);
+}
+
+.connector {
+	border-bottom: 2px solid var(--color-background-modifier-selected);
+	border-left: 2px solid var(--color-background-modifier-selected);
+	border-radius: 0 0 0 4px;
+	height: 16px;
+	left: 16px;
+	position: absolute;
+	top: 0;
+	width: 12px;
+}
+
+.icon {
+	color: var(--color-channel-icon);
+	flex-shrink: 0;
+	margin-right: 6px;
+}
+
+.iconSelected {
+	color: var(--color-text-primary);
+}
+
+.name {
+	color: var(--color-text-muted);
+	font-size: 15px;
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.nameSelected {
+	color: var(--color-text-primary);
+}
+
+.nameUnread {
+	color: var(--color-text-primary);
+	font-weight: 600;
+}
+
+.closedBadge {
+	background: var(--color-background-tertiary);
+	border-radius: 3px;
+	color: var(--color-text-muted);
+	flex-shrink: 0;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	margin-left: auto;
+	padding: 1px 4px;
+	text-transform: uppercase;
+}

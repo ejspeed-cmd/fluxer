@@ -161,6 +161,8 @@ export class Message {
 	readonly referencedMessage?: Message | null;
 	readonly messageSnapshots?: ReadonlyArray<MessageSnapshot>;
 	readonly call: TransformedMessageCall | null;
+	readonly threadId: string | null;
+	readonly threadName: string | null;
 	readonly state: string;
 	readonly nonce?: string;
 	readonly blocked: boolean;
@@ -234,6 +236,8 @@ export class Message {
 			: undefined;
 		this.messageSnapshots = message.message_snapshots ? Object.freeze(message.message_snapshots) : undefined;
 		this.call = transformMessageCall(message.call);
+		this.threadId = message.thread_id ?? null;
+		this.threadName = message.thread_name ?? null;
 		const embeddableCodeLinkContent = extractEmbeddableCodeLinkContent(message.content);
 		this.invites = Object.freeze(InviteUtils.findInvites(embeddableCodeLinkContent));
 		this.gifts = Object.freeze(GiftCodeUtils.findGifts(embeddableCodeLinkContent));

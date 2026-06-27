@@ -1,0 +1,169 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+import {Channel} from '@app/features/channel/models/Channel';
+import Channels from '@app/features/channel/state/Channels';
+import {ChannelTypes} from '@fluxer/constants/src/ChannelConstants';
+import type {ThreadResponse} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
+import {action, makeAutoObservable, observable} from 'mobx';
+
+export interface ThreadPreview {
+	lastMessagePreview: string | null;
+	lastMessageAt: Date | null;
+	lastMessageAuthorId: string | null;
+	lastMessageAuthorUsername: string | null;
+	lastMessageAuthorAvatar: string | null;
+}
+
+export class Thread extends Channel {
+	readonly threadState: number;
+	readonly threadParentChannelId: string;
+	readonly threadCreatorId: string | null;
+	readonly threadCreatorUsername: string | null;
+	readonly threadExpiresAt: Date | null;
+	readonly preview: ThreadPreview;
+
+	constructor(data: ThreadResponse) {
+		super(data as Parameters<typeof Channel>[0]);
+		this.threadState = data.thread_state;
+		this.threadParentChannelId = data.thread_parent_channel_id;
+		this.threadCreatorId = data.thread_creator_id ?? null;
+		this.threadCreatorUsername = data.thread_creator_username ?? null;
+		this.threadExpiresAt = data.thread_expires_at ? new Date(data.thread_expires_at) : null;
+		this.preview = {
+			lastMessagePreview: data.last_message_preview ?? null,
+			lastMessageAt: data.last_message_at ? new Date(data.last_message_at) : null,
+			lastMessageAuthorId: data.last_message_author_id ?? null,
+			lastMessageAuthorUsername: data.last_message_author_username ?? null,
+			lastMessageAuthorAvatar: data.last_message_author_avatar ?? null,
+		};
+	}
+
+	isOpen(): boolean {
+		return this.threadState === 0;
+	}
+
+	isClosed(): boolean {
+		return this.threadState === 1;
+	}
+
+	isArchived(): boolean {
+		return this.threadState === 2;
+	}
+}
+
+class ThreadStore {
+	private readonly threadsById = new Map<string, Thread>();
+	private readonly threadsByChannel = new Map<string, Set<string>>();
+	readonly joinedThreadIds = observable.set<string>();
+
+	constructor() {
+		makeAutoObservable(this, {}, {autoBind: true});
+	}
+
+	getThread(threadId: string): Thread | undefined {
+		return this.threadsById.get(threadId);
+	}
+
+	getThreadsForChannel(channelId: string): ReadonlyArray<Thread> {
+		const ids = this.threadsByChannel.get(channelId);
+		if (!ids || ids.size === 0) return [];
+		const result: Thread[] = [];
+		for (const id of ids) {
+			const thread = this.threadsById.get(id);
+			if (thread) result.push(thread);
+		}
+		return result.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+	}
+
+	getJoinedThreadsForChannel(channelId: string): ReadonlyArray<Thread> {
+		return this.getThreadsForChannel(channelId).filter((t) => this.joinedThreadIds.has(t.id));
+	}
+
+	isJoined(threadId: string): boolean {
+		return this.joinedThreadIds.has(threadId);
+	}
+
+	@action
+	private setThread(data: ThreadResponse): void {
+		const existing = this.threadsById.get(data.id);
+		const thread = new Thread(data);
+		if (existing && existing.type === ChannelTypes.GUILD_THREAD) {
+			const parentId = thread.threadParentChannelId;
+			const prev = this.threadsById.get(data.id);
+			if (prev) {
+				const prevParent = (prev as Thread).threadParentChannelId;
+				if (prevParent !== parentId) {
+					this.threadsByChannel.get(prevParent)?.delete(data.id);
+				}
+			}
+		}
+		this.threadsById.set(data.id, thread);
+		const parentId = thread.threadParentChannelId;
+		if (!this.threadsByChannel.has(parentId)) {
+			this.threadsByChannel.set(parentId, new Set());
+		}
+		this.threadsByChannel.get(parentId)!.add(data.id);
+		Channels.handleChannelCreate({channel: data as Parameters<typeof Channel>[0]});
+	}
+
+	@action
+	private removeThread(threadId: string): void {
+		const thread = this.threadsById.get(threadId);
+		if (thread) {
+			this.threadsByChannel.get(thread.threadParentChannelId)?.delete(threadId);
+			this.threadsById.delete(threadId);
+			this.joinedThreadIds.delete(threadId);
+		}
+	}
+
+	@action
+	handleThreadCreate(data: ThreadResponse): void {
+		this.setThread(data);
+	}
+
+	@action
+	handleThreadUpdate(data: ThreadResponse): void {
+		this.setThread(data);
+	}
+
+	@action
+	handleThreadDelete({threadId}: {threadId: string}): void {
+		this.removeThread(threadId);
+	}
+
+	@action
+	handleThreadMemberAdd({threadId}: {threadId: string}): void {
+		this.joinedThreadIds.add(threadId);
+	}
+
+	@action
+	handleThreadMemberRemove({threadId}: {threadId: string}): void {
+		this.joinedThreadIds.delete(threadId);
+	}
+
+	@action
+	handleThreadListSync({threads, joinedThreadIds}: {threads: ThreadResponse[]; joinedThreadIds: string[]}): void {
+		for (const thread of threads) {
+			this.setThread(thread);
+		}
+		this.joinedThreadIds.replace(joinedThreadIds);
+	}
+
+	@action
+	handleGuildDelete(guildId: string): void {
+		for (const [id, thread] of this.threadsById) {
+			if (thread.guildId === guildId) {
+				this.removeThread(id);
+			}
+		}
+	}
+
+	@action
+	clear(): void {
+		this.threadsById.clear();
+		this.threadsByChannel.clear();
+		this.joinedThreadIds.clear();
+	}
+}
+
+export default new ThreadStore();

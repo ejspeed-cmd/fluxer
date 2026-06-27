@@ -2,6 +2,12 @@
 
 import {handleChannelCreate} from '@app/features/channel/events/ChannelCreate';
 import {handleChannelDelete} from '@app/features/channel/events/ChannelDelete';
+import {handleThreadCreate} from '@app/features/channel/events/ThreadCreate';
+import {handleThreadDelete} from '@app/features/channel/events/ThreadDelete';
+import {handleThreadListSync} from '@app/features/channel/events/ThreadListSync';
+import {handleThreadMemberAdd} from '@app/features/channel/events/ThreadMemberAdd';
+import {handleThreadMemberRemove} from '@app/features/channel/events/ThreadMemberRemove';
+import {handleThreadUpdate} from '@app/features/channel/events/ThreadUpdate';
 import {handleChannelPinsAck} from '@app/features/channel/events/ChannelPinsAck';
 import {handleChannelPinsUpdate} from '@app/features/channel/events/ChannelPinsUpdate';
 import {handleChannelRecipientAdd} from '@app/features/channel/events/ChannelRecipientAdd';
@@ -161,6 +167,12 @@ export function createHandlerRegistry(): GatewayHandlerRegistry {
 	registry.set('FAVORITE_MEME_CREATE', handleFavoriteMemeCreate as GatewayEventHandler);
 	registry.set('FAVORITE_MEME_UPDATE', handleFavoriteMemeUpdate as GatewayEventHandler);
 	registry.set('FAVORITE_MEME_DELETE', handleFavoriteMemeDelete as GatewayEventHandler);
+	registry.set('THREAD_CREATE', handleThreadCreate as GatewayEventHandler);
+	registry.set('THREAD_UPDATE', handleThreadUpdate as GatewayEventHandler);
+	registry.set('THREAD_DELETE', handleThreadDelete as GatewayEventHandler);
+	registry.set('THREAD_MEMBER_ADD', handleThreadMemberAdd as GatewayEventHandler);
+	registry.set('THREAD_MEMBER_REMOVE', handleThreadMemberRemove as GatewayEventHandler);
+	registry.set('THREAD_LIST_SYNC', handleThreadListSync as GatewayEventHandler);
 	registry.set('SESSIONS_REPLACE', () => {});
 	return registry;
 }

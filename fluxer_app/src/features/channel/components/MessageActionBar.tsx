@@ -70,9 +70,13 @@ import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
 import {canUseWindowFocusedActivationClick} from '@app/features/ui/utils/WindowFocusInteractionGuard';
 import UserSettings from '@app/features/user/state/UserSettings';
 import * as AvatarUtils from '@app/features/user/utils/AvatarUtils';
-import {MessageStates} from '@fluxer/constants/src/ChannelConstants';
+import {CreateThreadModal} from '@app/features/channel/components/modals/CreateThreadModal';
+import Threads from '@app/features/channel/state/Threads';
+import Permission from '@app/features/permissions/state/Permission';
+import {MessageStates, Permissions} from '@fluxer/constants/src/ChannelConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
+import {ChatCircleDotsIcon} from '@phosphor-icons/react';
 import {clsx} from 'clsx';
 import {observer} from 'mobx-react-lite';
 import React, {useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore} from 'react';
@@ -100,6 +104,14 @@ const UNSUPPRESS_EMBEDS_DESCRIPTOR = msg({
 const FORWARD_DESCRIPTOR = msg({
 	message: 'Forward',
 	comment: 'Tooltip on the forward button in the inline message hover action bar.',
+});
+const START_THREAD_DESCRIPTOR = msg({
+	message: 'Start Thread',
+	comment: 'Tooltip on the start-thread button in the inline message hover action bar.',
+});
+const JOIN_THREAD_DESCRIPTOR = msg({
+	message: 'Join Thread',
+	comment: 'Tooltip on the join-thread button in the inline message hover action bar.',
 });
 const shiftKeyManager = (() => {
 	let isShiftPressed = false;
@@ -356,6 +368,7 @@ interface MessageActionBarCoreProps {
 		canPinMessage: boolean;
 		canForwardMessage: boolean;
 		shouldRenderSuppressEmbeds: boolean;
+		canCreateThread: boolean;
 	};
 	isSaved: boolean;
 	developerMode: boolean;
@@ -388,12 +401,35 @@ export const MessageActionBarCore: React.FC<MessageActionBarCoreProps> = observe
 			canPinMessage,
 			canForwardMessage,
 			shouldRenderSuppressEmbeds,
+			canCreateThread,
 		} = permissions;
 		const supportsInteractiveActions = useMemo(() => !isClientSystemMessage(message), [message]);
 		const handlers = useMemo(
 			() => createMessageActionHandlers(message, {i18n, channel: permissions.channel}),
 			[message, i18n.locale, permissions.channel],
 		);
+		const handleStartThread = useCallback(() => {
+			const channel = permissions.channel;
+			ModalCommands.push(
+				modal(() => (
+					<CreateThreadModal
+						channelId={channel.id}
+						sourceMessageId={message.id}
+						sourceMessagePreview={message.content ? message.content.slice(0, 100) : undefined}
+						data-flx="channel.message-action-bar.handle-start-thread.create-thread-modal"
+					/>
+				)),
+			);
+		}, [message, permissions.channel]);
+		const handleJoinThread = useCallback(() => {
+			if (!message.threadId) return;
+			const channel = permissions.channel;
+			void Threads.isJoined(message.threadId)
+				? null
+				: import('@app/features/channel/commands/ThreadCommands').then(({join}) =>
+						join(channel.id, message.threadId!),
+					);
+		}, [message.threadId, permissions.channel]);
 		const channel = permissions.channel;
 		const quickReactionEmojis = useQuickReactionEmojis(
 			channel,
@@ -743,6 +779,32 @@ export const MessageActionBarCore: React.FC<MessageActionBarCoreProps> = observe
 										data-flx="channel.message-action-bar.message-action-bar-core.message-action-bar-button.reply"
 									/>
 								)}
+								{message.isUserMessage() && supportsInteractiveActions && canCreateThread && !message.threadId && (
+									<MessageActionBarButton
+										icon={
+											<ChatCircleDotsIcon
+												size={20}
+												data-flx="channel.message-action-bar.message-action-bar-core.start-thread-icon"
+											/>
+										}
+										label={i18n._(START_THREAD_DESCRIPTOR)}
+										onClick={handleStartThread}
+										data-flx="channel.message-action-bar.message-action-bar-core.message-action-bar-button.start-thread"
+									/>
+								)}
+								{message.isUserMessage() && supportsInteractiveActions && !!message.threadId && (
+									<MessageActionBarButton
+										icon={
+											<ChatCircleDotsIcon
+												size={20}
+												data-flx="channel.message-action-bar.message-action-bar-core.join-thread-icon"
+											/>
+										}
+										label={i18n._(JOIN_THREAD_DESCRIPTOR)}
+										onClick={handleJoinThread}
+										data-flx="channel.message-action-bar.message-action-bar-core.message-action-bar-button.join-thread"
+									/>
+								)}
 								{message.isUserMessage() && supportsInteractiveActions && canForwardMessage && (
 									<MessageActionBarButton
 										icon={
@@ -827,7 +889,17 @@ export const MessageActionBar = observer(
 			<MessageActionBarCore
 				message={message}
 				handleDelete={handleDelete}
-				permissions={permissions}
+				permissions={{
+					channel: permissions.channel,
+					canSendMessages: permissions.canSendMessages,
+					canAddReactions: permissions.canAddReactions,
+					canEditMessage: permissions.canEditMessage,
+					canDeleteMessage: permissions.canDeleteMessage,
+					canPinMessage: permissions.canPinMessage,
+					canForwardMessage: permissions.canForwardMessage,
+					shouldRenderSuppressEmbeds: permissions.shouldRenderSuppressEmbeds,
+					canCreateThread: permissions.canCreateThread,
+				}}
 				isSaved={isSaved}
 				developerMode={developerMode}
 				onPopoutToggle={onPopoutToggle}

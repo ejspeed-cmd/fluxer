@@ -1,0 +1,95 @@
+.card {
+	border: 1px solid var(--color-primary-accent);
+	border-left: 3px solid var(--color-primary-accent);
+	border-radius: 4px;
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-top: 8px;
+	max-width: 440px;
+	padding: 8px 12px;
+	transition: background 0.1s ease;
+}
+
+.card:hover {
+	background: var(--color-background-modifier-hover);
+}
+
+.header {
+	align-items: center;
+	display: flex;
+	gap: 6px;
+}
+
+.icon {
+	color: var(--color-primary-accent);
+	flex-shrink: 0;
+}
+
+.name {
+	color: var(--color-text-link);
+	font-size: 14px;
+	font-weight: 600;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.name:hover {
+	text-decoration: underline;
+}
+
+.closedBadge {
+	background: var(--color-background-tertiary);
+	border-radius: 3px;
+	color: var(--color-text-muted);
+	flex-shrink: 0;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	padding: 1px 4px;
+	text-transform: uppercase;
+}
+
+.preview {
+	color: var(--color-text-muted);
+	font-size: 14px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.meta {
+	align-items: center;
+	display: flex;
+	gap: 6px;
+}
+
+.avatar {
+	border-radius: 50%;
+	flex-shrink: 0;
+	height: 16px;
+	object-fit: cover;
+	width: 16px;
+}
+
+.avatarPlaceholder {
+	background: var(--color-background-tertiary);
+	border-radius: 50%;
+	flex-shrink: 0;
+	height: 16px;
+	width: 16px;
+}
+
+.metaText {
+	color: var(--color-text-muted);
+	font-size: 12px;
+}
+
+.joinHint {
+	color: var(--color-primary-accent);
+	font-size: 12px;
+	font-weight: 600;
+	margin-left: auto;
+}
