@@ -355,6 +355,8 @@ export interface Message {
 	readonly referenced_message?: Message | null;
 	readonly message_snapshots?: ReadonlyArray<MessageSnapshot>;
 	readonly call?: MessageCall | null;
+	readonly thread_id?: string | null;
+	readonly thread_name?: string | null;
 	readonly state?: string;
 	readonly nonce?: string;
 	readonly blocked?: boolean;

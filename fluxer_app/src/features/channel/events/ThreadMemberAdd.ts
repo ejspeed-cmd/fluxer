@@ -2,11 +2,9 @@
 
 import Threads from '@app/features/channel/state/Threads';
 import type {GatewayHandlerContext} from '@app/features/gateway/events/EventRouter';
+import type {ThreadMemberResponse} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
 
-interface ThreadMemberAddPayload {
-	thread_id: string;
-	user_id: string;
-}
+interface ThreadMemberAddPayload extends ThreadMemberResponse {}
 
 export function handleThreadMemberAdd(data: ThreadMemberAddPayload, _context: GatewayHandlerContext): void {
 	Threads.handleThreadMemberAdd({threadId: data.thread_id});

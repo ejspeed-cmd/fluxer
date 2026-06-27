@@ -276,11 +276,3 @@ export const ChannelIdThreadIdParam = z.object({
 });
 
 export type ChannelIdThreadIdParam = z.infer<typeof ChannelIdThreadIdParam>;
-
-export const ChannelIdThreadIdMessageIdParam = z.object({
-	channel_id: SnowflakeType.describe('The ID of the parent channel'),
-	thread_id: SnowflakeType.describe('The ID of the thread'),
-	message_id: SnowflakeType.describe('The ID of the message'),
-});
-
-export type ChannelIdThreadIdMessageIdParam = z.infer<typeof ChannelIdThreadIdMessageIdParam>;

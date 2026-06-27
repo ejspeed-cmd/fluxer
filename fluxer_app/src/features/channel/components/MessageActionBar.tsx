@@ -72,8 +72,7 @@ import UserSettings from '@app/features/user/state/UserSettings';
 import * as AvatarUtils from '@app/features/user/utils/AvatarUtils';
 import {CreateThreadModal} from '@app/features/channel/components/modals/CreateThreadModal';
 import Threads from '@app/features/channel/state/Threads';
-import Permission from '@app/features/permissions/state/Permission';
-import {MessageStates, Permissions} from '@fluxer/constants/src/ChannelConstants';
+import {MessageStates} from '@fluxer/constants/src/ChannelConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
 import {ChatCircleDotsIcon} from '@phosphor-icons/react';
@@ -424,11 +423,11 @@ export const MessageActionBarCore: React.FC<MessageActionBarCoreProps> = observe
 		const handleJoinThread = useCallback(() => {
 			if (!message.threadId) return;
 			const channel = permissions.channel;
-			void Threads.isJoined(message.threadId)
-				? null
-				: import('@app/features/channel/commands/ThreadCommands').then(({join}) =>
-						join(channel.id, message.threadId!),
-					);
+			if (!Threads.isJoined(message.threadId)) {
+				void import('@app/features/channel/commands/ThreadCommands').then(({join}) =>
+					join(channel.id, message.threadId!),
+				);
+			}
 		}, [message.threadId, permissions.channel]);
 		const channel = permissions.channel;
 		const quickReactionEmojis = useQuickReactionEmojis(

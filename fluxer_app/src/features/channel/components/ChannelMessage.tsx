@@ -737,6 +737,7 @@ export const Message: React.FC<MessageProps> = observer((props) => {
 						canDeleteAttachment: true,
 						canPinMessage: true,
 						canForwardMessage: true,
+						canCreateThread: false,
 						canSuppressEmbeds: true,
 						shouldRenderSuppressEmbeds: false,
 					}
@@ -924,6 +925,7 @@ export const Message: React.FC<MessageProps> = observer((props) => {
 									canPinMessage: true,
 									canForwardMessage: true,
 									shouldRenderSuppressEmbeds: true,
+									canCreateThread: false,
 								}}
 								isSaved={false}
 								developerMode={false}

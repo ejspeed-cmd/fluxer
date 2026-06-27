@@ -2,8 +2,7 @@
 
 import {Channel} from '@app/features/channel/models/Channel';
 import Channels from '@app/features/channel/state/Channels';
-import {ChannelTypes} from '@fluxer/constants/src/ChannelConstants';
-import type {ThreadResponse} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
+import type {ThreadPreviewCard, ThreadResponse} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
 import {action, makeAutoObservable, observable} from 'mobx';
 
 export interface ThreadPreview {
@@ -14,28 +13,47 @@ export interface ThreadPreview {
 	lastMessageAuthorAvatar: string | null;
 }
 
-export class Thread extends Channel {
+function mapPreview(card: Partial<ThreadPreviewCard>): ThreadPreview {
+	return {
+		lastMessagePreview: card.last_message_preview ?? null,
+		lastMessageAt: card.last_message_at ? new Date(card.last_message_at) : null,
+		lastMessageAuthorId: card.last_message_author_id ?? null,
+		lastMessageAuthorUsername: card.last_message_author_username ?? null,
+		lastMessageAuthorAvatar: card.last_message_author_avatar ?? null,
+	};
+}
+
+export class Thread {
+	readonly id: string;
+	readonly guildId?: string;
+	readonly name?: string;
+	readonly type: number;
+	readonly lastMessageId: string | null;
 	readonly threadState: number;
 	readonly threadParentChannelId: string;
 	readonly threadCreatorId: string | null;
 	readonly threadCreatorUsername: string | null;
 	readonly threadExpiresAt: Date | null;
 	readonly preview: ThreadPreview;
+	private readonly _channel: Channel;
 
 	constructor(data: ThreadResponse) {
-		super(data as Parameters<typeof Channel>[0]);
+		this._channel = new Channel(data as Parameters<typeof Channel>[0]);
+		this.id = data.id;
+		this.guildId = data.guild_id;
+		this.name = data.name;
+		this.type = data.type ?? ChannelTypes.GUILD_THREAD;
+		this.lastMessageId = data.last_message_id ?? null;
 		this.threadState = data.thread_state;
 		this.threadParentChannelId = data.thread_parent_channel_id;
 		this.threadCreatorId = data.thread_creator_id ?? null;
 		this.threadCreatorUsername = data.thread_creator_username ?? null;
 		this.threadExpiresAt = data.thread_expires_at ? new Date(data.thread_expires_at) : null;
-		this.preview = {
-			lastMessagePreview: data.last_message_preview ?? null,
-			lastMessageAt: data.last_message_at ? new Date(data.last_message_at) : null,
-			lastMessageAuthorId: data.last_message_author_id ?? null,
-			lastMessageAuthorUsername: data.last_message_author_username ?? null,
-			lastMessageAuthorAvatar: data.last_message_author_avatar ?? null,
-		};
+		this.preview = mapPreview(data);
+	}
+
+	get createdAt(): Date {
+		return this._channel.createdAt;
 	}
 
 	isOpen(): boolean {
@@ -48,6 +66,10 @@ export class Thread extends Channel {
 
 	isArchived(): boolean {
 		return this.threadState === 2;
+	}
+
+	toChannel(): Channel {
+		return this._channel;
 	}
 }
 
@@ -85,16 +107,12 @@ class ThreadStore {
 
 	@action
 	private setThread(data: ThreadResponse): void {
-		const existing = this.threadsById.get(data.id);
 		const thread = new Thread(data);
-		if (existing && existing.type === ChannelTypes.GUILD_THREAD) {
-			const parentId = thread.threadParentChannelId;
-			const prev = this.threadsById.get(data.id);
-			if (prev) {
-				const prevParent = (prev as Thread).threadParentChannelId;
-				if (prevParent !== parentId) {
-					this.threadsByChannel.get(prevParent)?.delete(data.id);
-				}
+		const existing = this.threadsById.get(data.id);
+		if (existing) {
+			const prevParent = existing.threadParentChannelId;
+			if (prevParent !== thread.threadParentChannelId) {
+				this.threadsByChannel.get(prevParent)?.delete(data.id);
 			}
 		}
 		this.threadsById.set(data.id, thread);
@@ -103,7 +121,7 @@ class ThreadStore {
 			this.threadsByChannel.set(parentId, new Set());
 		}
 		this.threadsByChannel.get(parentId)!.add(data.id);
-		Channels.handleChannelCreate({channel: data as Parameters<typeof Channel>[0]});
+		Channels.handleChannelCreate({channel: thread.toChannel().toJSON()});
 	}
 
 	@action
