@@ -1,12 +1,21 @@
 .threadItem {
-	display: flex;
 	align-items: center;
 	border-radius: 4px;
 	cursor: pointer;
-	height: 32px;
-	padding: 0 8px 0 36px;
+	display: flex;
+	height: 33px;
+	padding: 0 8px 0 28px;
 	position: relative;
 	user-select: none;
+}
+
+.threadItem:hover .name,
+.threadItemHoverable:hover .name {
+	color: var(--color-text-primary);
+}
+
+.threadItemSelected .name {
+	color: var(--color-text-primary);
 }
 
 .threadItem:hover,
@@ -19,14 +28,22 @@
 }
 
 .connector {
-	border-bottom: 2px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
-	border-left: 2px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
-	border-bottom-left-radius: 6px;
-	height: 18px;
-	left: 16px;
+	border-bottom: 1.5px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
+	border-left: 1.5px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
+	border-bottom-left-radius: 4px;
+	height: 50%;
+	left: 15px;
 	position: absolute;
-	top: -6px;
-	width: 12px;
+	top: 0;
+	width: 9px;
+}
+
+.connectorLine {
+	border-left: 1.5px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
+	height: 50%;
+	left: 15px;
+	position: absolute;
+	top: 0;
 }
 
 .icon {
@@ -52,11 +69,6 @@
 
 .nameSelected {
 	color: var(--color-text-primary);
-}
-
-.nameUnread {
-	color: var(--color-text-primary);
-	font-weight: 600;
 }
 
 .closedBadge {

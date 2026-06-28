@@ -12,13 +12,12 @@ import {MenuItem} from '@app/features/ui/action_menu/MenuItem';
 import * as ContextMenuCommands from '@app/features/ui/commands/ContextMenuCommands';
 import * as ToastCommands from '@app/features/ui/commands/ToastCommands';
 import FocusRing from '@app/features/ui/focus_ring/FocusRing';
-import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
 import {Permissions} from '@fluxer/constants/src/ChannelConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
-import {ThreadIcon} from '@app/features/ui/components/icons/ThreadIcon';
 import {clsx} from 'clsx';
 import {observer} from 'mobx-react-lite';
+import type React from 'react';
 import {useCallback} from 'react';
 
 const THREAD_DESCRIPTOR = msg({
@@ -157,13 +156,6 @@ export const ThreadItem = observer(({guild, thread, isSelectedByPath}: ThreadIte
 				data-channel-list-focus-item="true"
 			>
 				<div className={styles.connector} data-flx="app.thread-item.connector" />
-				<Tooltip text={thread.name ?? ''} data-flx="app.thread-item.tooltip">
-					<ThreadIcon
-						size={16}
-						className={clsx(styles.icon, isSelectedByPath && styles.iconSelected)}
-						data-flx="app.thread-item.icon"
-					/>
-				</Tooltip>
 				<span
 					className={clsx(styles.name, isSelectedByPath && styles.nameSelected)}
 					data-flx="app.thread-item.name"
