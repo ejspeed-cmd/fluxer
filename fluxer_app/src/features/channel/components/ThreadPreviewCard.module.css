@@ -1,14 +1,29 @@
+.wrapper {
+	margin-top: 4px;
+	position: relative;
+}
+
+.connector {
+	border-bottom: 2px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
+	border-left: 2px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
+	border-bottom-left-radius: 6px;
+	height: 14px;
+	left: -28px;
+	position: absolute;
+	top: -4px;
+	width: 20px;
+}
+
 .card {
-	border: 1px solid var(--color-primary-accent);
-	border-left: 3px solid var(--color-primary-accent);
-	border-radius: 4px;
+	background: var(--color-background-secondary-alt, var(--color-background-secondary));
+	border: 1px solid var(--color-background-tertiary);
+	border-radius: 8px;
 	cursor: pointer;
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
-	margin-top: 8px;
-	max-width: 440px;
-	padding: 8px 12px;
+	gap: 6px;
+	max-width: 432px;
+	padding: 10px 14px;
 	transition: background 0.1s ease;
 }
 
@@ -22,13 +37,8 @@
 	gap: 6px;
 }
 
-.icon {
-	color: var(--color-primary-accent);
-	flex-shrink: 0;
-}
-
-.name {
-	color: var(--color-text-link);
+.threadName {
+	color: var(--color-text-primary);
 	font-size: 14px;
 	font-weight: 600;
 	overflow: hidden;
@@ -36,31 +46,20 @@
 	white-space: nowrap;
 }
 
-.name:hover {
-	text-decoration: underline;
-}
-
-.closedBadge {
-	background: var(--color-background-tertiary);
-	border-radius: 3px;
-	color: var(--color-text-muted);
-	flex-shrink: 0;
-	font-size: 10px;
-	font-weight: 700;
-	letter-spacing: 0.02em;
-	padding: 1px 4px;
-	text-transform: uppercase;
-}
-
-.preview {
-	color: var(--color-text-muted);
+.messageCount {
+	color: var(--color-text-link);
 	font-size: 14px;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	font-weight: 500;
+	flex-shrink: 0;
 	white-space: nowrap;
 }
 
-.meta {
+.arrow {
+	color: var(--color-text-link);
+	font-size: 14px;
+}
+
+.preview {
 	align-items: center;
 	display: flex;
 	gap: 6px;
@@ -82,14 +81,21 @@
 	width: 16px;
 }
 
-.metaText {
+.previewText {
 	color: var(--color-text-muted);
-	font-size: 12px;
+	font-size: 14px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
-.joinHint {
-	color: var(--color-primary-accent);
+.previewAuthor {
+	color: var(--color-text-primary);
+	font-weight: 500;
+}
+
+.timestamp {
+	color: var(--color-text-muted);
+	flex-shrink: 0;
 	font-size: 12px;
-	font-weight: 600;
-	margin-left: auto;
 }
