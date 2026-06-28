@@ -3041,6 +3041,8 @@ impl From<MessageDbRow> for Message {
             message_snapshots: row
                 .message_snapshots
                 .map(|v| v.into_iter().map(convert_message_snapshot).collect()),
+            thread_id: None,
+            thread_name: None,
         }
     }
 }
