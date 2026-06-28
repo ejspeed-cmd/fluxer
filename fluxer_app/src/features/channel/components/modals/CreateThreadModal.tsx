@@ -78,6 +78,7 @@ export const CreateThreadModal = observer(({channelId, sourceMessageId, sourceMe
 			source_message_id: sourceMessageId,
 		});
 		Threads.handleThreadCreate(thread);
+		Threads.handleThreadMemberAdd({threadId: thread.id});
 		ToastCommands.createToast({type: 'success', children: i18n._(THREAD_CREATED_DESCRIPTOR)});
 		ModalCommands.pop();
 		const channel = Channels.getChannel(channelId);
