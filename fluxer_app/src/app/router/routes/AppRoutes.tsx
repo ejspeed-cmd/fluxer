@@ -288,6 +288,27 @@ const channelRoute = createRoute({
 		</ChannelLayout>
 	),
 });
+
+const threadRoute = createRoute({
+	getParentRoute: () => channelRoute,
+	id: 'thread',
+	path: '/channels/:guildId/:channelId/threads/:threadId',
+	component: () => (
+		<ChannelLayout data-flx="app.router.app-routes.thread-layout">
+			<ChannelIndexPage data-flx="app.router.app-routes.thread-index-page" />
+		</ChannelLayout>
+	),
+});
+const threadMessageRoute = createRoute({
+	getParentRoute: () => threadRoute,
+	id: 'threadMessage',
+	path: '/channels/:guildId/:channelId/threads/:threadId/:messageId',
+	component: () => (
+		<ChannelLayout data-flx="app.router.app-routes.thread-message-layout">
+			<ChannelIndexPage data-flx="app.router.app-routes.thread-message-index-page" />
+		</ChannelLayout>
+	),
+});
 const messageRoute = createRoute({
 	getParentRoute: () => channelRoute,
 	id: 'message',
@@ -319,6 +340,9 @@ export const appRouteTree = appLayoutRoute.addChildren([
 		meRoute,
 		discoverRoute,
 		favoritesRoute.addChildren([favoritesChannelRoute]),
-		channelsRoute.addChildren([membersRoute, channelRoute.addChildren([messageRoute])]),
+		channelsRoute.addChildren([
+			membersRoute,
+			channelRoute.addChildren([threadRoute.addChildren([threadMessageRoute]), messageRoute]),
+		]),
 	]),
 ]);

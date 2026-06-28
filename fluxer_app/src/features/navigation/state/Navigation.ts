@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {Routes} from '@app/app/Routes';
+import Channels from '@app/features/channel/state/Channels';
 import * as RouterUtils from '@app/features/navigation/utils/RouterUtils';
 import type {Router} from '@app/features/platform/components/router/RouterTypes';
 import {Logger} from '@app/features/platform/utils/AppLogger';
@@ -46,7 +47,7 @@ class Navigation {
 		}
 		const params = match.params;
 		this.guildId = (params.guildId as string) ?? null;
-		this.channelId = (params.channelId as string) ?? null;
+		this.channelId = ((params.threadId as string) ?? (params.channelId as string)) ?? null;
 		this.messageId = (params.messageId as string) ?? null;
 	}
 
@@ -103,7 +104,7 @@ class Navigation {
 		} else {
 			const guildId = this.guildId;
 			if (!guildId) return;
-			path = Routes.guildChannel(guildId, channelId);
+			path = this.buildChannelPath(guildId, channelId);
 		}
 		logger.debug(`clearMessageIdForChannel: ${path} (${mode})`);
 		this.applyNavigation(path, mode);
@@ -116,6 +117,10 @@ class Navigation {
 		if (guildId === '@favorites') {
 			return Routes.favoritesChannel(channelId);
 		}
+		const channel = Channels.getChannel(channelId);
+		if (channel?.parentId) {
+			return Routes.guildThread(guildId, channel.parentId, channelId);
+		}
 		return Routes.guildChannel(guildId, channelId);
 	}
 
@@ -126,12 +131,23 @@ class Navigation {
 		if (guildId === '@favorites') {
 			return Routes.favoritesChannelMessage(channelId, messageId);
 		}
+		const channel = Channels.getChannel(channelId);
+		if (channel?.parentId) {
+			return `${Routes.guildThread(guildId, channel.parentId, channelId)}/${messageId}`;
+		}
 		return Routes.channelMessage(guildId, channelId, messageId);
 	}
 
 	private buildGuildPath(guildId: string, channelId?: string, messageId?: string): string {
-		if (messageId && channelId) {
-			return Routes.channelMessage(guildId, channelId, messageId);
+		if (channelId) {
+			const channel = Channels.getChannel(channelId);
+			if (channel?.parentId) {
+				const threadPath = Routes.guildThread(guildId, channel.parentId, channelId);
+				return messageId ? `${threadPath}/${messageId}` : threadPath;
+			}
+			if (messageId) {
+				return Routes.channelMessage(guildId, channelId, messageId);
+			}
 		}
 		return Routes.guildChannel(guildId, channelId);
 	}

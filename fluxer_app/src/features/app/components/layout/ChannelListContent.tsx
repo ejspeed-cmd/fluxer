@@ -6,6 +6,7 @@ import {ChannelItem} from '@app/features/app/components/layout/ChannelItem';
 import channelItemStyles from '@app/features/app/components/layout/ChannelItem.module.css';
 import {ThreadItem} from '@app/features/app/components/layout/ThreadItem';
 import {ChannelItemContent} from '@app/features/app/components/layout/ChannelItemContent';
+import * as ThreadCommands from '@app/features/channel/commands/ThreadCommands';
 import styles from '@app/features/app/components/layout/ChannelListContent.module.css';
 import {
 	CollapsedCategoryVoiceParticipants,
@@ -107,6 +108,7 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 	const stickToBottomRef = useRef(false);
 	const pendingScrollTopRef = useRef<number | null>(null);
 	const scrollPersistRafRef = useRef<number | null>(null);
+	const fetchedThreadChannelIdsRef = useRef(new Set<string>());
 	const channelListNavigationRef = useRovingFocusList<HTMLDivElement>({
 		focusableSelector: '[data-channel-list-focus-item="true"]',
 		orientation: 'vertical',
@@ -126,10 +128,12 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 	let isMembersSelected = false;
 	if (location.pathname.startsWith(guildPrefix)) {
 		const tail = location.pathname.slice(guildPrefix.length);
-		const slash = tail.indexOf('/');
-		const segment = slash === -1 ? tail : tail.slice(0, slash);
+		const segments = tail.split('/').filter(Boolean);
+		const [segment, threadsMarker, threadId] = segments;
 		if (segment === 'members') {
 			isMembersSelected = true;
+		} else if (threadsMarker === 'threads' && threadId) {
+			selectedChannelInGuildId = threadId;
 		} else if (segment.length > 0) {
 			selectedChannelInGuildId = segment;
 		}
@@ -164,6 +168,24 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 		[guild.id],
 	);
 	const channelGroups = useMemo(() => organizeChannels(channels), [channels]);
+	const textChannelIds = useMemo(
+		() => channels.filter((channel) => channel.isGuildText()).map((channel) => channel.id),
+		[channels],
+	);
+	useEffect(() => {
+		const missingChannelIds = textChannelIds.filter((channelId) => !fetchedThreadChannelIdsRef.current.has(channelId));
+		if (missingChannelIds.length === 0) return;
+		for (const channelId of missingChannelIds) {
+			fetchedThreadChannelIdsRef.current.add(channelId);
+		}
+		void Promise.all(
+			missingChannelIds.map((channelId) =>
+				ThreadCommands.fetchList(channelId).catch(() => {
+					fetchedThreadChannelIdsRef.current.delete(channelId);
+				}),
+			),
+		);
+	}, [textChannelIds]);
 	const showTrailingDropZone = channelGroups.length > 0;
 	const channelIndicatorDependencies = useMemo(
 		() => [channels.length, ReadStates.version, userGuildSettings, hideMutedChannels, showFadedUnreadOnMutedChannels],
@@ -513,7 +535,7 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 													isOnMembersRoute={isMembersSelected}
 													data-flx="app.channel-list-content.channel-item--2"
 												/>
-												{Threads.getJoinedThreadsForChannel(ch.id).map((thread) => (
+												{Threads.getThreadsForChannel(ch.id).map((thread) => (
 													<ThreadItem
 														key={thread.id}
 														guild={guild}
