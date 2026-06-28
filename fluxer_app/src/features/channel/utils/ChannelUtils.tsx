@@ -22,7 +22,8 @@ import * as NicknameUtils from '@app/features/user/utils/NicknameUtils';
 import {FLUXERBOT_ID} from '@fluxer/constants/src/AppConstants';
 import {ChannelTypes, Permissions} from '@fluxer/constants/src/ChannelConstants';
 import {msg} from '@lingui/core/macro';
-import {CaretDownIcon, ChatCircleDotsIcon, type IconProps, NotePencilIcon} from '@phosphor-icons/react';
+import {CaretDownIcon, type IconProps, NotePencilIcon} from '@phosphor-icons/react';
+import {ThreadIcon} from '@app/features/ui/components/icons/ThreadIcon';
 
 const VOICE_MATURE_DESCRIPTOR = msg({
 	message: 'Voice (mature)',

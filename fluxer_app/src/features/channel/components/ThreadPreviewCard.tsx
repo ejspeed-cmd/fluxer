@@ -7,7 +7,7 @@ import * as NavigationCommands from '@app/features/navigation/commands/Navigatio
 import * as AvatarUtils from '@app/features/user/utils/AvatarUtils';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
-import {ThreadsLogoIcon} from '@phosphor-icons/react';
+import {ThreadIcon} from '@app/features/ui/components/icons/ThreadIcon';
 import {observer} from 'mobx-react-lite';
 import {useCallback} from 'react';
 
@@ -72,7 +72,7 @@ export const ThreadPreviewCard = observer(({threadId, threadName, guildId, paren
 			data-flx="channel.thread-preview-card.card.click"
 		>
 			<div className={styles.header} data-flx="channel.thread-preview-card.header">
-				<ThreadsLogoIcon size={16} className={styles.icon} data-flx="channel.thread-preview-card.icon" />
+				<ThreadIcon size={16} className={styles.icon} data-flx="channel.thread-preview-card.icon" />
 				<span className={styles.name} data-flx="channel.thread-preview-card.name">
 					{name}
 				</span>

@@ -16,7 +16,7 @@ import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
 import {Permissions} from '@fluxer/constants/src/ChannelConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
-import {ThreadsLogoIcon} from '@phosphor-icons/react';
+import {ThreadIcon} from '@app/features/ui/components/icons/ThreadIcon';
 import {clsx} from 'clsx';
 import {observer} from 'mobx-react-lite';
 import {useCallback} from 'react';
@@ -158,7 +158,7 @@ export const ThreadItem = observer(({guild, thread, isSelectedByPath}: ThreadIte
 			>
 				<div className={styles.connector} data-flx="app.thread-item.connector" />
 				<Tooltip text={thread.name ?? ''} data-flx="app.thread-item.tooltip">
-					<ThreadsLogoIcon
+					<ThreadIcon
 						size={16}
 						className={clsx(styles.icon, isSelectedByPath && styles.iconSelected)}
 						data-flx="app.thread-item.icon"

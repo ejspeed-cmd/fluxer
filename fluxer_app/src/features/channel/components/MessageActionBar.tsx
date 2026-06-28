@@ -74,7 +74,7 @@ import Threads from '@app/features/channel/state/Threads';
 import {MessageStates} from '@fluxer/constants/src/ChannelConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
-import {ThreadsLogoIcon} from '@phosphor-icons/react';
+import {ThreadIcon} from '@app/features/ui/components/icons/ThreadIcon';
 import {clsx} from 'clsx';
 import {observer} from 'mobx-react-lite';
 import React, {useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore} from 'react';
@@ -762,7 +762,7 @@ export const MessageActionBarCore: React.FC<MessageActionBarCoreProps> = observe
 								{message.isUserMessage() && supportsInteractiveActions && !!message.threadId && (
 									<MessageActionBarButton
 										icon={
-											<ThreadsLogoIcon
+											<ThreadIcon
 												size={20}
 												data-flx="channel.message-action-bar.message-action-bar-core.view-thread-icon"
 											/>

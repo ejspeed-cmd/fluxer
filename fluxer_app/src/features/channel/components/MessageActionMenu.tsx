@@ -57,7 +57,7 @@ import {
 	SuppressEmbedsIcon,
 	ViewReactionsIcon,
 } from '@app/features/ui/action_menu/ContextMenuIcons';
-import {ThreadsLogoIcon} from '@phosphor-icons/react';
+import {ThreadIcon} from '@app/features/ui/components/icons/ThreadIcon';
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import {modal} from '@app/features/ui/commands/ModalCommands';
 import {CreateThreadModal} from '@app/features/channel/components/modals/CreateThreadModal';
@@ -348,7 +348,7 @@ export const useMessageActionMenuData = (
 			if (message.isUserMessage() && supportsInteractiveActions && !message.threadId && permissions?.canCreateThread) {
 				interactionActions.push({
 					id: messageActionMenuItemIds.createThread,
-					icon: <ThreadsLogoIcon size={20} data-flx="channel.message-action-menu.groups.create-thread-icon" />,
+					icon: <ThreadIcon size={20} data-flx="channel.message-action-menu.groups.create-thread-icon" />,
 					label: i18n._(CREATE_THREAD_DESCRIPTOR),
 					onClick: handleCreateThread,
 				});
@@ -356,7 +356,7 @@ export const useMessageActionMenuData = (
 			if (message.isUserMessage() && supportsInteractiveActions && !!message.threadId) {
 				interactionActions.push({
 					id: messageActionMenuItemIds.createThread,
-					icon: <ThreadsLogoIcon size={20} data-flx="channel.message-action-menu.groups.view-thread-icon" />,
+					icon: <ThreadIcon size={20} data-flx="channel.message-action-menu.groups.view-thread-icon" />,
 					label: i18n._(VIEW_THREAD_MENU_DESCRIPTOR),
 					onClick: handleViewThread,
 				});
