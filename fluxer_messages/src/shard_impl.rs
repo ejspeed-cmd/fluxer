@@ -1166,6 +1166,8 @@ impl MessagesShard {
             nonce: options.nonce.clone(),
             call: message.call.as_ref().map(map_call),
             referenced_message,
+            thread_id: message.thread_id.map(|id| id.to_string()),
+            thread_name: message.thread_name.clone(),
         }
     }
 

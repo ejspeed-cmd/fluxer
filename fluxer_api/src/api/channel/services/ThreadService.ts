@@ -77,6 +77,21 @@ export class ThreadService {
 		await this.channelRepository.channelData.upsertThreadByChannel(channelId, threadId);
 		await this.addThreadMember(threadId, userId);
 
+		if (data.source_message_id) {
+			const sourceMessageId = createChannelID(BigInt(data.source_message_id.toString()));
+			const sourceMessage = await this.channelRepository.messages.getMessage(channelId, sourceMessageId);
+			if (sourceMessage) {
+				await this.channelRepository.messages.upsertMessage(
+					{
+						...sourceMessage.toRow(),
+						thread_id: threadId,
+						thread_name: data.name,
+					},
+					sourceMessage.toRow(),
+				);
+			}
+		}
+
 		if (thread.guildId) {
 			await this.gatewayService.dispatchGuild({
 				guildId: thread.guildId as GuildID,
