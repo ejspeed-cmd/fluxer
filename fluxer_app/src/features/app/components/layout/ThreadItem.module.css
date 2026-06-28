@@ -4,7 +4,7 @@
 	border-radius: 4px;
 	cursor: pointer;
 	height: 32px;
-	padding: 0 8px 0 32px;
+	padding: 0 8px 0 36px;
 	position: relative;
 	user-select: none;
 }
@@ -19,13 +19,13 @@
 }
 
 .connector {
-	border-bottom: 2px solid var(--color-background-modifier-selected);
-	border-left: 2px solid var(--color-background-modifier-selected);
-	border-radius: 0 0 0 4px;
-	height: 16px;
+	border-bottom: 2px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
+	border-left: 2px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
+	border-bottom-left-radius: 6px;
+	height: 18px;
 	left: 16px;
 	position: absolute;
-	top: 0;
+	top: -6px;
 	width: 12px;
 }
 
@@ -33,10 +33,12 @@
 	color: var(--color-channel-icon);
 	flex-shrink: 0;
 	margin-right: 6px;
+	opacity: 0.7;
 }
 
 .iconSelected {
 	color: var(--color-text-primary);
+	opacity: 1;
 }
 
 .name {
