@@ -134,7 +134,7 @@ export function getIcon(
 		case ChannelTypes.GUILD_CATEGORY:
 			return <CaretDownIcon weight="bold" data-flx="channel.channel-utils.get-icon.caret-down-icon" {...props} />;
 		case ChannelTypes.GUILD_THREAD:
-			return <ChatCircleDotsIcon weight="regular" data-flx="channel.channel-utils.get-icon.thread-icon" {...props} />;
+			return <ThreadIcon size={typeof props.size === 'number' ? props.size : 20} className={props.className as string | undefined} data-flx="channel.channel-utils.get-icon.thread-icon" />;
 		case ChannelTypes.DM_PERSONAL_NOTES:
 			return <NotePencilIcon weight="bold" data-flx="channel.channel-utils.get-icon.note-pencil-icon" {...props} />;
 		default:
