@@ -512,6 +512,7 @@ export const MessageContextMenu: React.FC<MessageContextMenuProps> = observer(
 		const reportMessageItem = itemById.get(ids.reportMessage);
 		const copyMessageIdItem = itemById.get(ids.copyMessageId);
 		const debugMessageItem = itemById.get(ids.debugMessage);
+		const createThreadItem = itemById.get(ids.createThread);
 		const canShowRemoveReactionsSubmenu = Boolean(removeAllReactionsItem) && reactions.length > 0;
 		const hasMessageContent = Boolean(copyMessageItem);
 		const copyTextAvailable = !excludeMediaActions && hasMessageContent;
@@ -582,12 +583,13 @@ export const MessageContextMenu: React.FC<MessageContextMenuProps> = observer(
 			);
 		};
 		const renderInteractionGroup = () => {
-			if (!editItem && !replyItem && !forwardItem) return null;
+			if (!editItem && !replyItem && !forwardItem && !createThreadItem) return null;
 			return (
 				<MenuGroup data-flx="ui.action-menu.message-context-menu.render-interaction-group.menu-group">
 					{editItem && renderDataMenuItem(editItem, 'edit')}
 					{replyItem && renderDataMenuItem(replyItem, 'reply')}
 					{forwardItem && renderDataMenuItem(forwardItem, 'forward')}
+					{createThreadItem && renderDataMenuItem(createThreadItem, 'create-thread')}
 				</MenuGroup>
 			);
 		};
