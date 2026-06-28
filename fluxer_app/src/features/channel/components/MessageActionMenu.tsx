@@ -57,8 +57,13 @@ import {
 	SuppressEmbedsIcon,
 	ViewReactionsIcon,
 } from '@app/features/ui/action_menu/ContextMenuIcons';
+import {ThreadsLogoIcon} from '@phosphor-icons/react';
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import {modal} from '@app/features/ui/commands/ModalCommands';
+import {CreateThreadModal} from '@app/features/channel/components/modals/CreateThreadModal';
+import * as NavigationCommands from '@app/features/navigation/commands/NavigationCommands';
+import Channels from '@app/features/channel/state/Channels';
+import Threads from '@app/features/channel/state/Threads';
 import {KeybindHint} from '@app/features/ui/keybind_hint/KeybindHint';
 import type {MenuGroupType, MenuItemType} from '@app/features/ui/menu_bottom_sheet/MenuBottomSheet';
 import UserSettings from '@app/features/user/state/UserSettings';
@@ -83,6 +88,14 @@ const REMOVE_ALL_REACTIONS_DESCRIPTOR = msg({
 const FORWARD_DESCRIPTOR = msg({
 	message: 'Forward',
 	comment: 'Message context menu item that opens the forward-to-channel picker.',
+});
+const CREATE_THREAD_DESCRIPTOR = msg({
+	message: 'Create Thread',
+	comment: 'Message context menu item that opens the create thread modal.',
+});
+const VIEW_THREAD_MENU_DESCRIPTOR = msg({
+	message: 'View Thread',
+	comment: 'Message context menu item that navigates to an existing thread.',
 });
 const UNSUPPRESS_EMBEDS_DESCRIPTOR = msg({
 	message: 'Unsuppress embeds',
@@ -121,6 +134,7 @@ export const messageActionMenuItemIds = {
 	removeAllReactions: 'remove_all_reactions',
 	reply: 'reply',
 	forward: 'forward',
+	createThread: 'create_thread',
 	edit: 'edit',
 	pinMessage: 'message_pin',
 	bookmarkMessage: 'message_bookmark',
@@ -214,6 +228,43 @@ export const useMessageActionMenuData = (
 		}
 		openReportMessageModal(message);
 	}, [message, onClose]);
+	const handleCreateThread = useCallback(() => {
+		const openModal = () =>
+			ModalCommands.push(
+				modal(() => (
+					<CreateThreadModal
+						channelId={message.channelId}
+						sourceMessageId={message.id}
+						sourceMessagePreview={message.content ? message.content.slice(0, 100) : undefined}
+						data-flx="channel.message-action-menu.handle-create-thread.create-thread-modal"
+					/>
+				)),
+			);
+		if (onClose) {
+			ModalCommands.runAfterBottomSheetClose(onClose, openModal);
+			return;
+		}
+		openModal();
+	}, [message, onClose]);
+	const handleViewThread = useCallback(() => {
+		if (!message.threadId) return;
+		const ch = Channels.getChannel(message.channelId);
+		const navigate = () => {
+			if (ch?.guildId) {
+				if (!Threads.isJoined(message.threadId!)) {
+					void import('@app/features/channel/commands/ThreadCommands').then(({join}) =>
+						join(message.channelId, message.threadId!),
+					);
+				}
+				NavigationCommands.selectChannel(ch.guildId, message.threadId!);
+			}
+		};
+		if (onClose) {
+			ModalCommands.runAfterBottomSheetClose(onClose, navigate);
+			return;
+		}
+		navigate();
+	}, [message.threadId, message.channelId, onClose]);
 	const handleDebugMessage = useCallback(() => {
 		const messageDebugModal = modal(() => (
 			<MessageDebugModal
@@ -292,6 +343,22 @@ export const useMessageActionMenuData = (
 					shortcut: (
 						<KeybindHint action="message_forward" data-flx="channel.message-action-menu.groups.keybind-hint--4" />
 					),
+				});
+			}
+			if (message.isUserMessage() && supportsInteractiveActions && !message.threadId && permissions?.canCreateThread) {
+				interactionActions.push({
+					id: messageActionMenuItemIds.createThread,
+					icon: <ThreadsLogoIcon size={20} data-flx="channel.message-action-menu.groups.create-thread-icon" />,
+					label: i18n._(CREATE_THREAD_DESCRIPTOR),
+					onClick: handleCreateThread,
+				});
+			}
+			if (message.isUserMessage() && supportsInteractiveActions && !!message.threadId) {
+				interactionActions.push({
+					id: messageActionMenuItemIds.createThread,
+					icon: <ThreadsLogoIcon size={20} data-flx="channel.message-action-menu.groups.view-thread-icon" />,
+					label: i18n._(VIEW_THREAD_MENU_DESCRIPTOR),
+					onClick: handleViewThread,
 				});
 			}
 			if (message.isCurrentUserAuthor() && message.isUserMessage() && !message.messageSnapshots) {
@@ -464,6 +531,8 @@ export const useMessageActionMenuData = (
 		handleSpeakMessage,
 		handleReportMessage,
 		handleDebugMessage,
+		handleCreateThread,
+		handleViewThread,
 		i18n.locale,
 	]);
 	const quickReactionRowVisible =

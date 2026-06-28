@@ -70,12 +70,11 @@ import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
 import {canUseWindowFocusedActivationClick} from '@app/features/ui/utils/WindowFocusInteractionGuard';
 import UserSettings from '@app/features/user/state/UserSettings';
 import * as AvatarUtils from '@app/features/user/utils/AvatarUtils';
-import {CreateThreadModal} from '@app/features/channel/components/modals/CreateThreadModal';
 import Threads from '@app/features/channel/state/Threads';
 import {MessageStates} from '@fluxer/constants/src/ChannelConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
-import {ChatCircleDotsIcon} from '@phosphor-icons/react';
+import {ThreadsLogoIcon} from '@phosphor-icons/react';
 import {clsx} from 'clsx';
 import {observer} from 'mobx-react-lite';
 import React, {useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore} from 'react';
@@ -104,13 +103,9 @@ const FORWARD_DESCRIPTOR = msg({
 	message: 'Forward',
 	comment: 'Tooltip on the forward button in the inline message hover action bar.',
 });
-const START_THREAD_DESCRIPTOR = msg({
-	message: 'Start Thread',
-	comment: 'Tooltip on the start-thread button in the inline message hover action bar.',
-});
-const JOIN_THREAD_DESCRIPTOR = msg({
-	message: 'Join Thread',
-	comment: 'Tooltip on the join-thread button in the inline message hover action bar.',
+const VIEW_THREAD_DESCRIPTOR = msg({
+	message: 'View Thread',
+	comment: 'Tooltip on the view-thread button shown in the hover action bar when a message already has a thread.',
 });
 const shiftKeyManager = (() => {
 	let isShiftPressed = false;
@@ -400,26 +395,12 @@ export const MessageActionBarCore: React.FC<MessageActionBarCoreProps> = observe
 			canPinMessage,
 			canForwardMessage,
 			shouldRenderSuppressEmbeds,
-			canCreateThread,
 		} = permissions;
 		const supportsInteractiveActions = useMemo(() => !isClientSystemMessage(message), [message]);
 		const handlers = useMemo(
 			() => createMessageActionHandlers(message, {i18n, channel: permissions.channel}),
 			[message, i18n.locale, permissions.channel],
 		);
-		const handleStartThread = useCallback(() => {
-			const channel = permissions.channel;
-			ModalCommands.push(
-				modal(() => (
-					<CreateThreadModal
-						channelId={channel.id}
-						sourceMessageId={message.id}
-						sourceMessagePreview={message.content ? message.content.slice(0, 100) : undefined}
-						data-flx="channel.message-action-bar.handle-start-thread.create-thread-modal"
-					/>
-				)),
-			);
-		}, [message, permissions.channel]);
 		const handleJoinThread = useCallback(() => {
 			if (!message.threadId) return;
 			const channel = permissions.channel;
@@ -778,30 +759,17 @@ export const MessageActionBarCore: React.FC<MessageActionBarCoreProps> = observe
 										data-flx="channel.message-action-bar.message-action-bar-core.message-action-bar-button.reply"
 									/>
 								)}
-								{message.isUserMessage() && supportsInteractiveActions && canCreateThread && !message.threadId && (
-									<MessageActionBarButton
-										icon={
-											<ChatCircleDotsIcon
-												size={20}
-												data-flx="channel.message-action-bar.message-action-bar-core.start-thread-icon"
-											/>
-										}
-										label={i18n._(START_THREAD_DESCRIPTOR)}
-										onClick={handleStartThread}
-										data-flx="channel.message-action-bar.message-action-bar-core.message-action-bar-button.start-thread"
-									/>
-								)}
 								{message.isUserMessage() && supportsInteractiveActions && !!message.threadId && (
 									<MessageActionBarButton
 										icon={
-											<ChatCircleDotsIcon
+											<ThreadsLogoIcon
 												size={20}
-												data-flx="channel.message-action-bar.message-action-bar-core.join-thread-icon"
+												data-flx="channel.message-action-bar.message-action-bar-core.view-thread-icon"
 											/>
 										}
-										label={i18n._(JOIN_THREAD_DESCRIPTOR)}
+										label={i18n._(VIEW_THREAD_DESCRIPTOR)}
 										onClick={handleJoinThread}
-										data-flx="channel.message-action-bar.message-action-bar-core.message-action-bar-button.join-thread"
+										data-flx="channel.message-action-bar.message-action-bar-core.message-action-bar-button.view-thread"
 									/>
 								)}
 								{message.isUserMessage() && supportsInteractiveActions && canForwardMessage && (

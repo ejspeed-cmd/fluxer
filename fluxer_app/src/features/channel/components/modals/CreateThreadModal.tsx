@@ -4,7 +4,10 @@ import * as Modal from '@app/features/app/components/dialogs/Modal';
 import {useFormSubmit} from '@app/features/app/hooks/useFormSubmit';
 import styles from '@app/features/channel/components/modals/CreateThreadModal.module.css';
 import * as ThreadCommands from '@app/features/channel/commands/ThreadCommands';
+import Threads from '@app/features/channel/state/Threads';
 import {CANCEL_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
+import * as NavigationCommands from '@app/features/navigation/commands/NavigationCommands';
+import Channels from '@app/features/channel/state/Channels';
 import {Button} from '@app/features/ui/button/Button';
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import * as ToastCommands from '@app/features/ui/commands/ToastCommands';
@@ -69,13 +72,18 @@ export const CreateThreadModal = observer(({channelId, sourceMessageId, sourceMe
 	});
 
 	const onSubmit = async (data: FormInputs) => {
-		await ThreadCommands.create(channelId, {
+		const thread = await ThreadCommands.create(channelId, {
 			name: data.name,
 			expires_in_ms: data.expires_in_ms,
 			source_message_id: sourceMessageId,
 		});
+		Threads.handleThreadCreate(thread);
 		ToastCommands.createToast({type: 'success', children: i18n._(THREAD_CREATED_DESCRIPTOR)});
 		ModalCommands.pop();
+		const channel = Channels.getChannel(channelId);
+		if (channel?.guildId) {
+			NavigationCommands.selectChannel(channel.guildId, thread.id);
+		}
 	};
 
 	const {handleSubmit} = useFormSubmit({

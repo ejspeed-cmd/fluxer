@@ -38,11 +38,11 @@ export class Thread {
 	private readonly _channel: Channel;
 
 	constructor(data: ThreadResponse) {
-		this._channel = new Channel(data as Parameters<typeof Channel>[0]);
+		this._channel = new Channel(data as ConstructorParameters<typeof Channel>[0]);
 		this.id = data.id;
 		this.guildId = data.guild_id;
 		this.name = data.name;
-		this.type = data.type ?? ChannelTypes.GUILD_THREAD;
+		this.type = data.type ?? 11;
 		this.lastMessageId = data.last_message_id ?? null;
 		this.threadState = data.thread_state;
 		this.threadParentChannelId = data.thread_parent_channel_id;
