@@ -7,16 +7,14 @@ import {ChannelTextarea} from '@app/features/channel/components/ChannelTextarea'
 import Channels from '@app/features/channel/state/Channels';
 import Threads from '@app/features/channel/state/Threads';
 import * as MessageCommands from '@app/features/messaging/commands/MessageCommands';
-import {http} from '@app/features/platform/transport/RestTransport';
 import {ThreadIcon} from '@app/features/ui/components/icons/ThreadIcon';
 import FocusRing from '@app/features/ui/focus_ring/FocusRing';
 import {MAX_MESSAGES_PER_CHANNEL} from '@fluxer/constants/src/LimitConstants';
-import type {Message} from '@fluxer/schema/src/domains/message/MessageResponseSchemas';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
 import {XIcon} from '@phosphor-icons/react';
 import {observer} from 'mobx-react-lite';
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 
 const CLOSE_DESCRIPTOR = msg({
 	message: 'Close thread panel',
@@ -36,27 +34,13 @@ export const ThreadPanel = observer(({threadId, onClose}: ThreadPanelProps) => {
 	const {i18n} = useLingui();
 	const thread = Threads.getThread(threadId);
 	const channel = Channels.getChannel(threadId);
-	const [sourceMessage, setSourceMessage] = useState<Message | null>(null);
 
 	const name = thread?.name ?? channel?.name ?? '';
 	const creatorUsername = thread?.threadCreatorUsername ?? null;
-	const parentChannelId = thread?.threadParentChannelId ?? null;
-	const sourceMessageId = thread?.threadSourceMessageId ?? null;
 
 	useEffect(() => {
 		void MessageCommands.fetchMessages(threadId, null, null, MAX_MESSAGES_PER_CHANNEL);
 	}, [threadId]);
-
-	useEffect(() => {
-		if (!parentChannelId || !sourceMessageId) {
-			setSourceMessage(null);
-			return;
-		}
-		http
-			.get<Message>(`/channels/${parentChannelId}/messages/${sourceMessageId}`)
-			.then((res) => setSourceMessage(res.body))
-			.catch(() => setSourceMessage(null));
-	}, [parentChannelId, sourceMessageId]);
 
 	return (
 		<div className={styles.panel} data-flx="channel.thread-panel.panel">
@@ -85,12 +69,6 @@ export const ThreadPanel = observer(({threadId, onClose}: ThreadPanelProps) => {
 					</button>
 				</FocusRing>
 			</div>
-			{sourceMessage && (
-				<div className={styles.sourceMessage} data-flx="channel.thread-panel.source-message">
-					<span className={styles.sourceMessageAuthor}>{sourceMessage.author.username}</span>
-					<span className={styles.sourceMessageContent}>{sourceMessage.content}</span>
-				</div>
-			)}
 			{channel && (
 				<div className={styles.content} data-flx="channel.thread-panel.content">
 					<ChannelChatLayout

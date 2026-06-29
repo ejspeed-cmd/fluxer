@@ -13,7 +13,11 @@ import {useCallback} from 'react';
 
 const MESSAGES_DESCRIPTOR = msg({
 	message: '{count, plural, one {# Message} other {# Messages}}',
-	comment: 'Message count on a thread preview card.',
+	comment: 'Message count badge on a thread preview card.',
+});
+const SEE_THREAD_DESCRIPTOR = msg({
+	message: 'See thread ›',
+	comment: 'Link text on thread preview card when no messages exist yet.',
 });
 
 interface ThreadPreviewCardProps {
@@ -30,7 +34,6 @@ export const ThreadPreviewCard = observer(({threadId, threadName, guildId, paren
 
 	const name = thread?.name ?? threadName;
 	const preview = thread?.preview;
-	const isClosed = thread ? !thread.isOpen() : false;
 	const messageCount = thread?.messageCount ?? 0;
 
 	const handleClick = useCallback(async () => {
@@ -50,9 +53,7 @@ export const ThreadPreviewCard = observer(({threadId, threadName, guildId, paren
 				})
 			: null;
 
-	const timeAgo = preview?.lastMessageAt
-		? getRelativeDateString(preview.lastMessageAt, i18n)
-		: null;
+	const timeAgo = preview?.lastMessageAt ? getRelativeDateString(preview.lastMessageAt, i18n) : null;
 
 	return (
 		<div className={styles.wrapper} data-flx="channel.thread-preview-card.wrapper">
@@ -70,18 +71,18 @@ export const ThreadPreviewCard = observer(({threadId, threadName, guildId, paren
 				}}
 				data-flx="channel.thread-preview-card.card.click"
 			>
-				<div className={styles.header} data-flx="channel.thread-preview-card.header">
+				<div className={styles.topRow} data-flx="channel.thread-preview-card.top-row">
 					<span className={styles.threadName} data-flx="channel.thread-preview-card.thread-name">
 						{name}
 					</span>
-					{!isClosed && messageCount > 0 && (
-						<span className={styles.messageCount} data-flx="channel.thread-preview-card.message-count">
-							{i18n._(MESSAGES_DESCRIPTOR, {count: messageCount})} ›
-						</span>
-					)}
+					<span className={styles.messageBadge} data-flx="channel.thread-preview-card.message-badge">
+						{messageCount > 0
+							? `${i18n._(MESSAGES_DESCRIPTOR, {count: messageCount})} ›`
+							: i18n._(SEE_THREAD_DESCRIPTOR)}
+					</span>
 				</div>
 				{preview?.lastMessagePreview && (
-					<div className={styles.preview} data-flx="channel.thread-preview-card.preview">
+					<div className={styles.previewRow} data-flx="channel.thread-preview-card.preview-row">
 						{avatarUrl ? (
 							<img
 								src={avatarUrl}
