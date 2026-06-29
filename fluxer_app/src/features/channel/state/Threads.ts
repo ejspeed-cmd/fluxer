@@ -34,7 +34,9 @@ export class Thread {
 	readonly threadCreatorId: string | null;
 	readonly threadCreatorUsername: string | null;
 	readonly threadExpiresAt: Date | null;
+	readonly threadSourceMessageId: string | null;
 	preview: ThreadPreview;
+	messageCount: number;
 	private readonly _channel: Channel;
 
 	constructor(data: ThreadResponse) {
@@ -49,7 +51,9 @@ export class Thread {
 		this.threadCreatorId = data.thread_creator_id ?? null;
 		this.threadCreatorUsername = data.thread_creator_username ?? null;
 		this.threadExpiresAt = data.thread_expires_at ? new Date(data.thread_expires_at) : null;
+		this.threadSourceMessageId = data.thread_source_message_id ?? null;
 		this.preview = mapPreview(data);
+		this.messageCount = 0;
 	}
 
 	get createdAt(): Date {
@@ -172,6 +176,7 @@ class ThreadStore {
 		const thread = this.threadsById.get(threadId);
 		if (!thread) return;
 		Object.assign(thread.preview, preview);
+		thread.messageCount += 1;
 	}
 
 	@action

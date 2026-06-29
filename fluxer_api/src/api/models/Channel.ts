@@ -36,7 +36,6 @@ export class Channel {
 	readonly indexedAt: Date | null;
 	readonly version: number;
 	readonly threadParentChannelId: ChannelID | null;
-	readonly threadCreatorId: UserID | null;
 	readonly threadCreatorUsername: string | null;
 	readonly threadState: ThreadState | null;
 	readonly threadExpiresAt: Date | null;
@@ -82,7 +81,6 @@ export class Channel {
 		this.indexedAt = row.indexed_at ?? null;
 		this.version = row.version;
 		this.threadParentChannelId = row.thread_parent_channel_id ?? null;
-		this.threadCreatorId = row.thread_creator_id ?? null;
 		this.threadCreatorUsername = row.thread_creator_username ?? null;
 		this.threadState = (row.thread_state ?? null) as ThreadState | null;
 		this.threadExpiresAt = row.thread_expires_at ?? null;
@@ -127,7 +125,6 @@ export class Channel {
 			indexed_at: this.indexedAt,
 			version: this.version,
 			thread_parent_channel_id: this.threadParentChannelId,
-			thread_creator_id: this.threadCreatorId,
 			thread_creator_username: this.threadCreatorUsername,
 			thread_state: this.threadState,
 			thread_expires_at: this.threadExpiresAt,

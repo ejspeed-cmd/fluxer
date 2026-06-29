@@ -223,6 +223,7 @@ export const ThreadResponse = ChannelResponse.extend({
 	thread_creator_username: z.string().nullish().describe('Username of the thread creator at time of creation'),
 	thread_expires_at: z.iso.datetime().nullish().describe('ISO 8601 timestamp when the thread auto-closes'),
 	thread_member_count: Int32Type.optional().describe('Approximate number of members in the thread'),
+	thread_source_message_id: SnowflakeStringType.nullish().describe('ID of the message this thread was started from'),
 }).merge(ThreadPreviewCard);
 
 export type ThreadResponse = z.infer<typeof ThreadResponse>;

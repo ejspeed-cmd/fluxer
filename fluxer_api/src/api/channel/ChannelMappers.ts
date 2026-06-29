@@ -145,9 +145,10 @@ function serializeGuildThreadChannel(channel: Channel, ctx: ContentWarningCtx): 
 		rate_limit_per_user: channel.rateLimitPerUser,
 		thread_state: channel.threadState ?? ThreadStates.OPEN,
 		thread_parent_channel_id: channel.threadParentChannelId?.toString() ?? '',
-		thread_creator_id: channel.threadCreatorId?.toString() ?? null,
+		thread_creator_id: channel.ownerId?.toString() ?? null,
 		thread_creator_username: channel.threadCreatorUsername ?? null,
 		thread_expires_at: channel.threadExpiresAt?.toISOString() ?? null,
+		thread_source_message_id: channel.threadSourceMessageId?.toString() ?? null,
 	};
 }
 

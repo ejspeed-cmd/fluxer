@@ -140,7 +140,6 @@ export const CHANNEL_COLUMNS = [
 	'indexed_at',
 	'version',
 	'thread_parent_channel_id',
-	'thread_creator_id',
 	'thread_creator_username',
 	'thread_state',
 	'thread_expires_at',

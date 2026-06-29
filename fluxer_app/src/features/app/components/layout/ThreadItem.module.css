@@ -9,22 +9,26 @@
 	user-select: none;
 }
 
-.threadItem:hover .name,
-.threadItemHoverable:hover .name {
-	color: var(--color-text-primary);
-}
+@media (hover: hover) and (pointer: fine) {
+	:global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
+		.threadItem:not(.threadItemSelected):hover {
+		background: var(--background-modifier-hover);
+	}
 
-.threadItemSelected .name {
-	color: var(--color-text-primary);
-}
-
-.threadItem:hover,
-.threadItemHoverable:hover {
-	background: var(--color-background-modifier-hover);
+	:global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
+		.threadItem:not(.threadItemSelected):hover
+		.name {
+		color: var(--text-chat);
+	}
 }
 
 .threadItemSelected {
-	background: var(--color-background-modifier-selected);
+	background: var(--background-modifier-selected);
+	color: var(--text-primary);
+}
+
+.threadItemSelected .name {
+	color: var(--text-primary);
 }
 
 .connector {
@@ -54,12 +58,12 @@
 }
 
 .iconSelected {
-	color: var(--color-text-primary);
+	color: var(--text-primary);
 	opacity: 1;
 }
 
 .name {
-	color: var(--color-text-muted);
+	color: var(--text-tertiary-muted);
 	font-size: 15px;
 	font-weight: 500;
 	overflow: hidden;
@@ -68,7 +72,7 @@
 }
 
 .nameSelected {
-	color: var(--color-text-primary);
+	color: var(--text-primary);
 }
 
 .closedBadge {

@@ -68,7 +68,7 @@ export const ThreadItem = observer(({guild, thread, isSelectedByPath}: ThreadIte
 		if (!isJoined) {
 			await ThreadCommands.join(thread.threadParentChannelId, thread.id);
 		}
-		NavigationCommands.selectThread(guild.id, thread.threadParentChannelId, thread.id);
+		NavigationCommands.selectChannel(guild.id, thread.id);
 	}, [guild.id, thread.id, thread.threadParentChannelId, isJoined]);
 
 	const handleContextMenu = useCallback(
@@ -141,7 +141,7 @@ export const ThreadItem = observer(({guild, thread, isSelectedByPath}: ThreadIte
 				aria-current={isSelectedByPath ? 'page' : undefined}
 				className={clsx(
 					styles.threadItem,
-					isSelectedByPath ? styles.threadItemSelected : styles.threadItemHoverable,
+					isSelectedByPath && styles.threadItemSelected,
 				)}
 				onClick={handleClick}
 				onContextMenu={handleContextMenu}

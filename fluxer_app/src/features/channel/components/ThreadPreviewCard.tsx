@@ -31,6 +31,7 @@ export const ThreadPreviewCard = observer(({threadId, threadName, guildId, paren
 	const name = thread?.name ?? threadName;
 	const preview = thread?.preview;
 	const isClosed = thread ? !thread.isOpen() : false;
+	const messageCount = thread?.messageCount ?? 0;
 
 	const handleClick = useCallback(async () => {
 		if (!isJoined) {
@@ -73,9 +74,9 @@ export const ThreadPreviewCard = observer(({threadId, threadName, guildId, paren
 					<span className={styles.threadName} data-flx="channel.thread-preview-card.thread-name">
 						{name}
 					</span>
-					{!isClosed && (
+					{!isClosed && messageCount > 0 && (
 						<span className={styles.messageCount} data-flx="channel.thread-preview-card.message-count">
-							{i18n._(MESSAGES_DESCRIPTOR, {count: 1})} ›
+							{i18n._(MESSAGES_DESCRIPTOR, {count: messageCount})} ›
 						</span>
 					)}
 				</div>

@@ -64,7 +64,7 @@ export class ThreadService {
 			position: 0,
 			parent_id: channelId,
 			thread_parent_channel_id: channelId,
-			thread_creator_id: userId,
+			owner_id: userId,
 			thread_creator_username: username,
 			thread_state: ThreadStates.OPEN as ThreadState,
 			thread_expires_at: expiresAt,
@@ -293,8 +293,9 @@ export function mapThreadToResponse(thread: Channel): ThreadResponse {
 		})),
 		thread_state: thread.threadState ?? ThreadStates.OPEN,
 		thread_parent_channel_id: thread.threadParentChannelId?.toString() ?? '',
-		thread_creator_id: thread.threadCreatorId?.toString() ?? null,
+		thread_creator_id: thread.ownerId?.toString() ?? null,
 		thread_creator_username: thread.threadCreatorUsername ?? null,
 		thread_expires_at: thread.threadExpiresAt?.toISOString() ?? null,
+		thread_source_message_id: thread.threadSourceMessageId?.toString() ?? null,
 	};
 }
