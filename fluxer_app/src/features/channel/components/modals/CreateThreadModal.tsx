@@ -83,7 +83,7 @@ export const CreateThreadModal = observer(({channelId, sourceMessageId, sourceMe
 		ModalCommands.pop();
 		const channel = Channels.getChannel(channelId);
 		if (channel?.guildId) {
-			NavigationCommands.selectChannel(channel.guildId, thread.id);
+			NavigationCommands.selectThread(channel.guildId, channelId, thread.id);
 		}
 	};
 

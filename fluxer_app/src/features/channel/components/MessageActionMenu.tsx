@@ -256,7 +256,7 @@ export const useMessageActionMenuData = (
 						join(message.channelId, message.threadId!),
 					);
 				}
-				NavigationCommands.selectChannel(ch.guildId, message.threadId!);
+				NavigationCommands.selectThread(ch.guildId, message.channelId, message.threadId!);
 			}
 		};
 		if (onClose) {

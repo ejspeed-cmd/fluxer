@@ -184,6 +184,8 @@ export const Permissions = {
 	UPDATE_RTC_REGION: 1n << 53n,
 	VIEW_CHANNEL_MEMBERS: 1n << 54n,
 	CREATE_THREADS: 1n << 57n,
+	SEND_MESSAGES_IN_THREADS: 1n << 38n,
+	MANAGE_THREADS: 1n << 34n,
 } as const;
 export const PermissionsDescriptions: Record<keyof typeof Permissions, string> = {
 	CREATE_INSTANT_INVITE: 'Allows creation of instant invites',
@@ -224,6 +226,8 @@ export const PermissionsDescriptions: Record<keyof typeof Permissions, string> =
 	UPDATE_RTC_REGION: 'Allows updating the voice region',
 	VIEW_CHANNEL_MEMBERS: 'Allows viewing the member list in a channel',
 	CREATE_THREADS: 'Allows creating threads in a channel',
+	SEND_MESSAGES_IN_THREADS: 'Allows sending messages in threads',
+	MANAGE_THREADS: 'Allows managing threads (rename, close, archive, delete)',
 };
 export const ALL_PERMISSIONS = Object.values(Permissions).reduce((acc, p) => acc | p, 0n);
 export const DEFAULT_PERMISSIONS =
@@ -232,6 +236,7 @@ export const DEFAULT_PERMISSIONS =
 	Permissions.STREAM |
 	Permissions.VIEW_CHANNEL |
 	Permissions.SEND_MESSAGES |
+	Permissions.SEND_MESSAGES_IN_THREADS |
 	Permissions.EMBED_LINKS |
 	Permissions.ATTACH_FILES |
 	Permissions.READ_MESSAGE_HISTORY |
@@ -252,6 +257,7 @@ export const ElevatedPermissions =
 	Permissions.MANAGE_MESSAGES |
 	Permissions.MANAGE_WEBHOOKS |
 	Permissions.MANAGE_EXPRESSIONS |
+	Permissions.MANAGE_THREADS |
 	Permissions.MODERATE_MEMBERS;
 export const CHANNEL_REINDEX_AFTER_TIMESTAMP = 1779557400;
 

@@ -8,7 +8,7 @@ import {MissingPermissionsError} from '@fluxer/errors/src/domains/core/MissingPe
 import type {CreateThreadRequest, UpdateThreadRequest} from '@fluxer/schema/src/domains/channel/ChannelRequestSchemas';
 import type {ThreadResponse} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
 import type {ChannelID, GuildID, UserID} from '../../BrandedTypes';
-import {createChannelID} from '../../BrandedTypes';
+import {createChannelID, createMessageID} from '../../BrandedTypes';
 import type {IGatewayService} from '../../infrastructure/IGatewayService';
 import type {ISnowflakeService} from '../../infrastructure/ISnowflakeService';
 import type {RequestCache} from '../../middleware/RequestCacheMiddleware';
@@ -68,6 +68,7 @@ export class ThreadService {
 			thread_creator_username: username,
 			thread_state: ThreadStates.OPEN as ThreadState,
 			thread_expires_at: expiresAt,
+			thread_source_message_id: data.source_message_id ? createMessageID(BigInt(data.source_message_id.toString())) : null,
 			soft_deleted: false,
 			version: 1,
 		};
@@ -78,7 +79,7 @@ export class ThreadService {
 		await this.addThreadMember(threadId, userId);
 
 		if (data.source_message_id) {
-			const sourceMessageId = createChannelID(BigInt(data.source_message_id.toString()));
+			const sourceMessageId = createMessageID(BigInt(data.source_message_id.toString()));
 			const sourceMessage = await this.channelRepository.messages.getMessage(channelId, sourceMessageId);
 			if (sourceMessage) {
 				await this.channelRepository.messages.upsertMessage(
@@ -158,7 +159,7 @@ export class ThreadService {
 		if (thread.threadParentChannelId !== channelId) throw new UnknownChannelError();
 
 		if (data.state !== undefined || data.name !== undefined) {
-			await checkPermission(Permissions.MANAGE_CHANNELS);
+			await checkPermission(Permissions.MANAGE_THREADS);
 		}
 
 		const updated = await this.channelRepository.channelData.upsert({
@@ -190,7 +191,7 @@ export class ThreadService {
 		const {guild, checkPermission} = await this.channelAuth.getChannelAuthenticated({userId, channelId});
 		if (!guild) throw new MissingPermissionsError();
 
-		await checkPermission(Permissions.MANAGE_CHANNELS);
+		await checkPermission(Permissions.MANAGE_THREADS);
 
 		const thread = await this.channelRepository.channelData.findUnique(threadId);
 		if (!thread || thread.type !== ChannelTypes.GUILD_THREAD) throw new UnknownChannelError();
@@ -248,6 +249,16 @@ export class ThreadService {
 		}
 	}
 
+	async listThreadMembers(params: {userId: UserID; threadId: ChannelID}): Promise<Array<{userId: UserID; joinedAt: Date}>> {
+		const {userId, threadId} = params;
+		await this.channelAuth.getChannelAuthenticated({userId, channelId: threadId});
+
+		const thread = await this.channelRepository.channelData.findUnique(threadId);
+		if (!thread || thread.type !== ChannelTypes.GUILD_THREAD) throw new UnknownChannelError();
+
+		return this.channelRepository.channelData.listThreadMembers(threadId);
+	}
+
 	private async addThreadMember(threadId: ChannelID, userId: UserID): Promise<void> {
 		await this.channelRepository.channelData.upsertThreadMember({
 			threadId,
@@ -261,7 +272,7 @@ export class ThreadService {
 		const threadIds = await this.channelRepository.channelData.listThreadsByChannel(channelId, 1000);
 		if (threadIds.length === 0) return null;
 		const threads = await this.channelRepository.channelData.listChannels(threadIds);
-		return threads.find((t) => t.ownerId?.toString() === sourceMessageId) ?? null;
+		return threads.find((t) => t.threadSourceMessageId?.toString() === sourceMessageId) ?? null;
 	}
 }
 

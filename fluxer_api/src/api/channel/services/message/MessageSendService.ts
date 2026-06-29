@@ -254,7 +254,9 @@ export class MessageSendService {
 			if (isOperationDisabled(guild, GuildOperations.SEND_MESSAGE)) {
 				throw new FeatureTemporarilyDisabledError();
 			}
-			await checkPermission(Permissions.SEND_MESSAGES);
+			await checkPermission(
+				channel.type === ChannelTypes.GUILD_THREAD ? Permissions.SEND_MESSAGES_IN_THREADS : Permissions.SEND_MESSAGES,
+			);
 			assertGuildMemberCanCommunicate(member);
 			if (data.tts) {
 				const hasTtsPermission = await hasPermission(Permissions.SEND_TTS_MESSAGES);

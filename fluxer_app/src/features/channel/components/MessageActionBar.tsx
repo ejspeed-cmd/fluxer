@@ -409,6 +409,11 @@ export const MessageActionBarCore: React.FC<MessageActionBarCoreProps> = observe
 					join(channel.id, message.threadId!),
 				);
 			}
+			if (channel.guildId) {
+				void import('@app/features/navigation/commands/NavigationCommands').then(({selectThread}) =>
+					selectThread(channel.guildId!, channel.id, message.threadId!),
+				);
+			}
 		}, [message.threadId, permissions.channel]);
 		const channel = permissions.channel;
 		const quickReactionEmojis = useQuickReactionEmojis(

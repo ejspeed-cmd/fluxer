@@ -132,6 +132,8 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 			isMembersSelected = true;
 		} else if (segment.length > 0) {
 			selectedChannelInGuildId = segment;
+			// also highlight parent channel when viewing a thread: /guildId/channelId/threads/threadId
+			// selectedChannelInGuildId is already set to channelId in this case
 		}
 	}
 	const handleMembersClick = useCallback(() => {

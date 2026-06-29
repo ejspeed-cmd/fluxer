@@ -68,7 +68,7 @@ export const ThreadItem = observer(({guild, thread, isSelectedByPath}: ThreadIte
 		if (!isJoined) {
 			await ThreadCommands.join(thread.threadParentChannelId, thread.id);
 		}
-		NavigationCommands.selectChannel(guild.id, thread.id);
+		NavigationCommands.selectThread(guild.id, thread.threadParentChannelId, thread.id);
 	}, [guild.id, thread.id, thread.threadParentChannelId, isJoined]);
 
 	const handleContextMenu = useCallback(

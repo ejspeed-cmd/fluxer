@@ -1,15 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {beforeAll, beforeEach, describe, expect, it} from 'vitest';
+import {Permissions} from '@fluxer/constants/src/ChannelConstants';
 import {createTestAccount} from '../../auth/tests/AuthTestUtils';
 import {type ApiTestHarness, createApiTestHarness} from '../../test/ApiTestHarness';
 import {HTTP_STATUS} from '../../test/TestConstants';
 import {createBuilder} from '../../test/TestRequestBuilder';
 import {
 	acceptInvite,
+	addMemberRole,
 	createChannel,
 	createChannelInvite,
 	createGuild,
+	createPermissionOverwrite,
+	createRole,
 	createThread,
 	deleteThread,
 	getThread,
@@ -111,7 +115,7 @@ describe('Thread Lifecycle', () => {
 			.execute();
 	});
 
-	it('member without MANAGE_CHANNELS cannot delete a thread', async () => {
+	it('member without MANAGE_THREADS cannot delete a thread', async () => {
 		const owner = await createTestAccount(harness);
 		const member = await createTestAccount(harness);
 		const guild = await createGuild(harness, owner.token, 'Thread Delete Perm Guild');
@@ -176,5 +180,153 @@ describe('Thread Lifecycle', () => {
 			.body({name: 'Thread in Category'})
 			.expect(HTTP_STATUS.BAD_REQUEST)
 			.execute();
+	});
+
+	it('member with MANAGE_THREADS can delete a thread', async () => {
+		const owner = await createTestAccount(harness);
+		const member = await createTestAccount(harness);
+		const guild = await createGuild(harness, owner.token, 'Manage Threads Grant Guild');
+		const channel = await createChannel(harness, owner.token, guild.id, 'general');
+		const invite = await createChannelInvite(harness, owner.token, channel.id);
+		await acceptInvite(harness, member.token, invite.code);
+
+		const modRole = await createRole(harness, owner.token, guild.id, {
+			name: 'Moderator',
+			permissions: Permissions.MANAGE_THREADS.toString(),
+		});
+		await addMemberRole(harness, owner.token, guild.id, member.userId, modRole.id);
+
+		const thread = await createThread(harness, owner.token, channel.id, 'Deletable by Mod');
+
+		await createBuilder(harness, member.token)
+			.delete(`/channels/${channel.id}/threads/${thread.id}`)
+			.expect(HTTP_STATUS.NO_CONTENT)
+			.execute();
+	});
+
+	it('member with MANAGE_THREADS can rename a thread', async () => {
+		const owner = await createTestAccount(harness);
+		const member = await createTestAccount(harness);
+		const guild = await createGuild(harness, owner.token, 'Rename Thread Guild');
+		const channel = await createChannel(harness, owner.token, guild.id, 'general');
+		const invite = await createChannelInvite(harness, owner.token, channel.id);
+		await acceptInvite(harness, member.token, invite.code);
+
+		const modRole = await createRole(harness, owner.token, guild.id, {
+			name: 'Moderator',
+			permissions: Permissions.MANAGE_THREADS.toString(),
+		});
+		await addMemberRole(harness, owner.token, guild.id, member.userId, modRole.id);
+
+		const thread = await createThread(harness, owner.token, channel.id, 'Old Name');
+
+		const updated = await createBuilder<Record<string, unknown>>(harness, member.token)
+			.patch(`/channels/${channel.id}/threads/${thread.id}`)
+			.body({name: 'Renamed by Mod'})
+			.execute();
+
+		expect(updated.name).toBe('Renamed by Mod');
+	});
+
+	it('member without MANAGE_THREADS cannot rename a thread', async () => {
+		const owner = await createTestAccount(harness);
+		const member = await createTestAccount(harness);
+		const guild = await createGuild(harness, owner.token, 'No Rename Thread Guild');
+		const channel = await createChannel(harness, owner.token, guild.id, 'general');
+		const invite = await createChannelInvite(harness, owner.token, channel.id);
+		await acceptInvite(harness, member.token, invite.code);
+
+		const thread = await createThread(harness, owner.token, channel.id, 'Locked Name');
+
+		await createBuilder(harness, member.token)
+			.patch(`/channels/${channel.id}/threads/${thread.id}`)
+			.body({name: 'Attempted Rename'})
+			.expect(HTTP_STATUS.FORBIDDEN)
+			.execute();
+	});
+
+	it('member without SEND_MESSAGES_IN_THREADS cannot post in a thread', async () => {
+		const owner = await createTestAccount(harness);
+		const member = await createTestAccount(harness);
+		const guild = await createGuild(harness, owner.token, 'Thread Msg Perm Guild');
+		const channel = await createChannel(harness, owner.token, guild.id, 'general');
+		const invite = await createChannelInvite(harness, owner.token, channel.id);
+		await acceptInvite(harness, member.token, invite.code);
+
+		const thread = await createThread(harness, owner.token, channel.id, 'Restricted Thread');
+		await joinThread(harness, member.token, channel.id, thread.id as string);
+
+		await createPermissionOverwrite(harness, owner.token, thread.id as string, member.userId, {
+			type: 1,
+			allow: '0',
+			deny: Permissions.SEND_MESSAGES_IN_THREADS.toString(),
+		});
+
+		await createBuilder(harness, member.token)
+			.post(`/channels/${thread.id}/messages`)
+			.body({content: 'should be blocked'})
+			.expect(HTTP_STATUS.FORBIDDEN)
+			.execute();
+	});
+
+	it('member with SEND_MESSAGES_IN_THREADS can post in a thread', async () => {
+		const owner = await createTestAccount(harness);
+		const member = await createTestAccount(harness);
+		const guild = await createGuild(harness, owner.token, 'Thread Msg Allow Guild');
+		const channel = await createChannel(harness, owner.token, guild.id, 'general');
+		const invite = await createChannelInvite(harness, owner.token, channel.id);
+		await acceptInvite(harness, member.token, invite.code);
+
+		const thread = await createThread(harness, owner.token, channel.id, 'Open Thread');
+		await joinThread(harness, member.token, channel.id, thread.id as string);
+
+		const message = await createBuilder<Record<string, unknown>>(harness, member.token)
+			.post(`/channels/${thread.id}/messages`)
+			.body({content: 'hello thread'})
+			.execute();
+
+		expect(message.content).toBe('hello thread');
+		expect(message.channel_id).toBe(thread.id);
+	});
+
+	it('GET /channels/:thread_id/thread-members returns creator after creation', async () => {
+		const owner = await createTestAccount(harness);
+		const guild = await createGuild(harness, owner.token, 'Thread Members Guild');
+		const channel = await createChannel(harness, owner.token, guild.id, 'general');
+		const thread = await createThread(harness, owner.token, channel.id, 'Members Test Thread');
+
+		const members = await createBuilder<Array<Record<string, unknown>>>(harness, owner.token)
+			.get(`/channels/${thread.id}/thread-members`)
+			.execute();
+
+		expect(members).toHaveLength(1);
+		expect(members[0].user_id).toBe(owner.userId);
+		expect(members[0].thread_id).toBe(thread.id);
+	});
+
+	it('GET /channels/:thread_id/thread-members reflects joins and leaves', async () => {
+		const owner = await createTestAccount(harness);
+		const member = await createTestAccount(harness);
+		const guild = await createGuild(harness, owner.token, 'Thread Members Join Guild');
+		const channel = await createChannel(harness, owner.token, guild.id, 'general');
+		const invite = await createChannelInvite(harness, owner.token, channel.id);
+		await acceptInvite(harness, member.token, invite.code);
+
+		const thread = await createThread(harness, owner.token, channel.id, 'Join Leave Thread');
+
+		await joinThread(harness, member.token, channel.id, thread.id as string);
+
+		const afterJoin = await createBuilder<Array<Record<string, unknown>>>(harness, owner.token)
+			.get(`/channels/${thread.id}/thread-members`)
+			.execute();
+		expect(afterJoin).toHaveLength(2);
+
+		await leaveThread(harness, member.token, channel.id, thread.id as string);
+
+		const afterLeave = await createBuilder<Array<Record<string, unknown>>>(harness, owner.token)
+			.get(`/channels/${thread.id}/thread-members`)
+			.execute();
+		expect(afterLeave).toHaveLength(1);
+		expect(afterLeave[0].user_id).toBe(owner.userId);
 	});
 });

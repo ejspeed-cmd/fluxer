@@ -7,6 +7,7 @@ import MessageReferences from '@app/features/messaging/state/MessageReferences';
 import Messages from '@app/features/messaging/state/MessagingMessages';
 import MentionFeed from '@app/features/notification/state/MentionFeed';
 import ReadStates from '@app/features/read_state/state/ReadStates';
+import Threads from '@app/features/channel/state/Threads';
 import TypingIndicator from '@app/features/typing/state/TypingIndicator';
 import Notification from '@app/features/ui/state/Notification';
 import CallState from '@app/features/voice/state/CallState';
@@ -41,5 +42,15 @@ export function handleMessageCreate(data: Message, _context: GatewayHandlerConte
 	TtsUtils.handleIncomingTtsMessage(data);
 	if (data.call && data.channel_id) {
 		CallState.handleCallParticipants(data.channel_id, [...data.call.participants]);
+	}
+	const thread = Threads.getThread(data.channel_id);
+	if (thread) {
+		Threads.updateThreadPreview(data.channel_id, {
+			lastMessagePreview: data.content ? data.content.slice(0, 100) : null,
+			lastMessageAt: new Date(data.timestamp),
+			lastMessageAuthorId: data.author.id,
+			lastMessageAuthorUsername: data.author.username,
+			lastMessageAuthorAvatar: data.author.avatar ?? null,
+		});
 	}
 }

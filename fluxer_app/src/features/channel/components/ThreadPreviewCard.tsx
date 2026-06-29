@@ -37,7 +37,7 @@ export const ThreadPreviewCard = observer(({threadId, threadName, guildId, paren
 			await ThreadCommands.join(parentChannelId, threadId);
 		}
 		if (guildId) {
-			NavigationCommands.selectChannel(guildId, threadId);
+			NavigationCommands.selectThread(guildId, parentChannelId, threadId);
 		}
 	}, [threadId, parentChannelId, guildId, isJoined]);
 

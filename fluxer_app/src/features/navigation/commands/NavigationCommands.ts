@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {Routes} from '@app/app/Routes';
 import * as LinkChannelCommands from '@app/features/channel/commands/LinkChannelCommands';
 import Channels from '@app/features/channel/state/Channels';
 import Navigation from '@app/features/navigation/state/Navigation';
+import * as RouterUtils from '@app/features/navigation/utils/RouterUtils';
 import {FAVORITES_GUILD_ID, ME} from '@fluxer/constants/src/AppConstants';
 import {ChannelTypes} from '@fluxer/constants/src/ChannelConstants';
 
@@ -95,4 +97,12 @@ export function navigateToMessage(
 
 export function clearMessageIdForChannel(channelId: string, mode: NavigationMode = 'replace'): void {
 	Navigation.clearMessageIdForChannel(channelId, mode);
+}
+
+export function selectThread(guildId: string, channelId: string, threadId: string): void {
+	RouterUtils.transitionTo(Routes.guildThread(guildId, channelId, threadId));
+}
+
+export function closeThread(guildId: string, channelId: string): void {
+	navigateToChannelNow(guildId, channelId);
 }

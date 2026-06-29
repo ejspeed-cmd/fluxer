@@ -5,7 +5,7 @@ import {
 	ListThreadsQuery,
 	UpdateThreadRequest,
 } from '@fluxer/schema/src/domains/channel/ChannelRequestSchemas';
-import {ThreadResponse} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
+import {ThreadMemberResponse, ThreadResponse} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
 import {
 	ChannelIdParam,
 	ChannelIdThreadIdParam,
@@ -204,6 +204,38 @@ export function ThreadController(app: HonoApp) {
 			const threadId = createChannelID(thread_id);
 			await ctx.get('threadService').leaveThread({userId, channelId, threadId});
 			return ctx.body(null, 204);
+		},
+	);
+
+	app.get(
+		'/channels/:channel_id/thread-members',
+		RateLimitMiddleware(RateLimitConfigs.THREAD_GET),
+		LoginRequired,
+		Validator('param', ChannelIdParam),
+		OpenAPI({
+			operationId: 'list_thread_members',
+			summary: 'List thread members',
+			description: 'Returns the list of members who have joined a thread. Requires VIEW_CHANNEL on the parent channel.',
+			responseSchema: z.array(ThreadMemberResponse),
+			statusCode: 200,
+			security: ['botToken', 'bearerToken', 'sessionToken'],
+			tags: 'Threads',
+		}),
+		async (ctx) => {
+			const userId = ctx.get('user').id;
+			const channelId = createChannelID(ctx.req.valid('param').channel_id);
+			const members = await ctx.get('threadService').listThreadMembers({
+				userId,
+				threadId: channelId,
+			});
+			return ctx.json(
+				members.map((m) => ({
+					thread_id: channelId.toString(),
+					user_id: m.userId.toString(),
+					joined_at: m.joinedAt.toISOString(),
+					notification_override: null,
+				})),
+			);
 		},
 	);
 }

@@ -34,7 +34,7 @@ export class Thread {
 	readonly threadCreatorId: string | null;
 	readonly threadCreatorUsername: string | null;
 	readonly threadExpiresAt: Date | null;
-	readonly preview: ThreadPreview;
+	preview: ThreadPreview;
 	private readonly _channel: Channel;
 
 	constructor(data: ThreadResponse) {
@@ -165,6 +165,13 @@ class ThreadStore {
 			this.setThread(thread);
 		}
 		this.joinedThreadIds.replace(joinedThreadIds);
+	}
+
+	@action
+	updateThreadPreview(threadId: string, preview: Partial<ThreadPreview>): void {
+		const thread = this.threadsById.get(threadId);
+		if (!thread) return;
+		Object.assign(thread.preview, preview);
 	}
 
 	@action
