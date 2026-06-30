@@ -71,7 +71,7 @@ export const ThreadPreviewCard = observer(({threadId, threadName, guildId, paren
 			<div
 				role="button"
 				tabIndex={0}
-				className={clsx(styles.box, isOpen && styles.boxActive)}
+			className={clsx(styles.box, isOpen ? styles.boxActive : null)}
 				onClick={handleClick}
 				onKeyDown={(e: React.KeyboardEvent) => {
 					if (e.key === 'Enter' || e.key === ' ') {
@@ -84,7 +84,7 @@ export const ThreadPreviewCard = observer(({threadId, threadName, guildId, paren
 				<div className={styles.header} data-flx="channel.thread-preview-card.header">
 					<div className={styles.titleRow} data-flx="channel.thread-preview-card.title-row">
 						<span
-							className={clsx(styles.threadName, !isOpen && styles.threadNameClosed)}
+							className={clsx(styles.threadName, !isOpen ? styles.threadNameClosed : null)}
 							data-flx="channel.thread-preview-card.thread-name"
 						>
 							{name}

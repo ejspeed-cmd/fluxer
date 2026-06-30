@@ -107,10 +107,6 @@ const VIEW_THREAD_DESCRIPTOR = msg({
 	message: 'View Thread',
 	comment: 'Tooltip on the view-thread button shown in the hover action bar when a message already has a thread.',
 });
-const START_THREAD_DESCRIPTOR = msg({
-	message: 'Create Thread',
-	comment: 'Tooltip on the start-thread button shown in the hover action bar.',
-});
 const shiftKeyManager = (() => {
 	let isShiftPressed = false;
 	const listeners = new Set<() => void>();
@@ -399,7 +395,6 @@ export const MessageActionBarCore: React.FC<MessageActionBarCoreProps> = observe
 			canPinMessage,
 			canForwardMessage,
 			shouldRenderSuppressEmbeds,
-			canCreateThread,
 		} = permissions;
 		const supportsInteractiveActions = useMemo(() => !isClientSystemMessage(message), [message]);
 		const handlers = useMemo(

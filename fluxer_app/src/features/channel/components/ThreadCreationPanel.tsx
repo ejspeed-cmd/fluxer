@@ -63,7 +63,7 @@ export const ThreadCreationPanel = observer(({
 		setSubmitting(true);
 		try {
 			const thread = await ThreadCommands.create(channelId, {
-				name: threadName.trim() || undefined,
+				name: threadName.trim(),
 				source_message_id: sourceMessageId,
 			});
 			Threads.handleThreadCreate(thread);
