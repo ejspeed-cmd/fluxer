@@ -53,7 +53,8 @@ export class Thread {
 		this.threadExpiresAt = data.thread_expires_at ? new Date(data.thread_expires_at) : null;
 		this.threadSourceMessageId = data.thread_source_message_id ?? null;
 		this.preview = mapPreview(data);
-		this.messageCount = 0;
+		this.messageCount = data.thread_member_count ?? 0;
+		makeAutoObservable(this, {id: false, guildId: false, type: false, threadParentChannelId: false}, {autoBind: true});
 	}
 
 	get createdAt(): Date {

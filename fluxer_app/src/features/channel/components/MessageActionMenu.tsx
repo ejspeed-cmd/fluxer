@@ -60,7 +60,6 @@ import {
 import {ThreadIcon} from '@app/features/ui/components/icons/ThreadIcon';
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import {modal} from '@app/features/ui/commands/ModalCommands';
-import {CreateThreadModal} from '@app/features/channel/components/modals/CreateThreadModal';
 import * as NavigationCommands from '@app/features/navigation/commands/NavigationCommands';
 import Channels from '@app/features/channel/state/Channels';
 import Threads from '@app/features/channel/state/Threads';
@@ -229,22 +228,21 @@ export const useMessageActionMenuData = (
 		openReportMessageModal(message);
 	}, [message, onClose]);
 	const handleCreateThread = useCallback(() => {
-		const openModal = () =>
-			ModalCommands.push(
-				modal(() => (
-					<CreateThreadModal
-						channelId={message.channelId}
-						sourceMessageId={message.id}
-						sourceMessagePreview={message.content ? message.content.slice(0, 100) : undefined}
-						data-flx="channel.message-action-menu.handle-create-thread.create-thread-modal"
-					/>
-				)),
+		const open = () => {
+			void import('@app/features/channel/state/ThreadCreation').then(({default: ThreadCreation}) =>
+				ThreadCreation.open({
+					channelId: message.channelId,
+					sourceMessageId: message.id,
+					sourceMessagePreview: message.content ? message.content.slice(0, 120) : undefined,
+					sourceMessageAuthor: message.author.username,
+				}),
 			);
+		};
 		if (onClose) {
-			ModalCommands.runAfterBottomSheetClose(onClose, openModal);
+			ModalCommands.runAfterBottomSheetClose(onClose, open);
 			return;
 		}
-		openModal();
+		open();
 	}, [message, onClose]);
 	const handleViewThread = useCallback(() => {
 		if (!message.threadId) return;

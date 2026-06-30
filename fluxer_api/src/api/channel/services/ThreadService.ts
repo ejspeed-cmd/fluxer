@@ -141,9 +141,7 @@ export class ThreadService {
 			if (stateFilter === 'all') return true;
 			return thread.threadState === stateMap[stateFilter];
 		});
-	}
-
-	async updateThread(params: {
+	}	async updateThread(params: {
 		userId: UserID;
 		channelId: ChannelID;
 		threadId: ChannelID;
@@ -249,6 +247,35 @@ export class ThreadService {
 		}
 	}
 
+	async enrichThreadsWithLastMessage(threads: Array<Channel>): Promise<Array<ThreadResponse>> {
+		return Promise.all(
+			threads.map(async (thread) => {
+				try {
+					const messages = await this.channelRepository.messages.listMessages(thread.id, undefined, 50);
+					const last = messages[0] ?? null;
+					const count = messages.length;
+					if (!last || !last.authorId) {
+						return {...mapThreadToResponse(thread), thread_member_count: count};
+					}
+					const author = await this.userRepository.findUnique(last.authorId);
+					const snowflakeMs = Number(BigInt(last.id.toString()) >> 22n) + 1420070400000;
+					return {
+						...mapThreadToResponse(thread, {
+							content: last.content,
+							authorId: last.authorId.toString(),
+							authorUsername: author?.username ?? '',
+							authorAvatar: author?.avatarHash ?? null,
+							timestamp: new Date(snowflakeMs),
+						}),
+						thread_member_count: count,
+					};
+				} catch {
+					return mapThreadToResponse(thread);
+				}
+			}),
+		);
+	}
+
 	async listThreadMembers(params: {userId: UserID; threadId: ChannelID}): Promise<Array<{userId: UserID; joinedAt: Date}>> {
 		const {userId, threadId} = params;
 		await this.channelAuth.getChannelAuthenticated({userId, channelId: threadId});
@@ -276,7 +303,13 @@ export class ThreadService {
 	}
 }
 
-export function mapThreadToResponse(thread: Channel): ThreadResponse {
+export function mapThreadToResponse(thread: Channel, lastMessage?: {
+	content: string | null;
+	authorId: string;
+	authorUsername: string;
+	authorAvatar: string | null;
+	timestamp: Date;
+} | null): ThreadResponse {
 	return {
 		id: thread.id.toString(),
 		type: thread.type,
@@ -297,5 +330,10 @@ export function mapThreadToResponse(thread: Channel): ThreadResponse {
 		thread_creator_username: thread.threadCreatorUsername ?? null,
 		thread_expires_at: thread.threadExpiresAt?.toISOString() ?? null,
 		thread_source_message_id: thread.threadSourceMessageId?.toString() ?? null,
+		last_message_preview: lastMessage?.content ? lastMessage.content.slice(0, 100) : null,
+		last_message_at: lastMessage?.timestamp.toISOString() ?? null,
+		last_message_author_id: lastMessage?.authorId ?? null,
+		last_message_author_username: lastMessage?.authorUsername ?? null,
+		last_message_author_avatar: lastMessage?.authorAvatar ?? null,
 	};
 }

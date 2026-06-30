@@ -52,5 +52,16 @@ export function handleMessageCreate(data: Message, _context: GatewayHandlerConte
 			lastMessageAuthorUsername: data.author.username,
 			lastMessageAuthorAvatar: data.author.avatar ?? null,
 		});
+	} else if (data.guild_id) {
+		void import('@app/features/channel/state/Channels').then(({default: Channels}) => {
+			const ch = Channels.getChannel(data.channel_id);
+			if (ch?.type === 11) {
+				void import('@app/features/channel/commands/ThreadCommands').then(({fetchList}) => {
+					if (ch.parentId) {
+						void fetchList(ch.parentId.toString());
+					}
+				});
+			}
+		});
 	}
 }

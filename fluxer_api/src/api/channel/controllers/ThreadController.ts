@@ -75,7 +75,8 @@ export function ThreadController(app: HonoApp) {
 				limit,
 				before: before ? createChannelID(before) : undefined,
 			});
-			return ctx.json(threads.map(mapThreadToResponse));
+			const enriched = await ctx.get('threadService').enrichThreadsWithLastMessage(threads);
+			return ctx.json(enriched);
 		},
 	);
 

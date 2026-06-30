@@ -1,102 +1,133 @@
-.wrapper {
-	margin-top: 4px;
-	padding-left: 16px;
-	position: relative;
-}
-
-.connector {
-	border-bottom: 2px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
-	border-left: 2px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
-	border-bottom-left-radius: 6px;
-	height: 14px;
-	left: 0;
-	position: absolute;
-	top: -2px;
-	width: 12px;
-}
-
-.card {
-	cursor: pointer;
+.wrap {
+	align-items: flex-start;
 	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	max-width: 432px;
+	margin: 6px 16px 2px 20px;
 }
 
-.topRow {
+.branchArm {
+	color: #4e5058;
+	flex-shrink: 0;
+	height: 28px;
+	width: 32px;
+}
+
+.box {
+	background: #2b2d31;
+	border: 1.5px solid rgba(255,255,255,0.1);
+	border-radius: 8px;
+	cursor: pointer;
+	flex: 1;
+	max-width: 360px;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.box:hover {
+	border-color: rgba(255,255,255,0.2);
+}
+
+.boxActive {
+	border-color: #5865f2;
+}
+
+.boxActive:hover {
+	border-color: #7983f5;
+}
+
+.header {
 	align-items: center;
-	background: var(--color-background-secondary-alt, var(--background-secondary-alt, rgba(0,0,0,0.2)));
-	border-radius: 6px;
 	display: flex;
 	gap: 8px;
-	padding: 6px 12px;
-	transition: background 0.1s ease;
+	padding: 8px 12px 6px;
 }
 
-.card:hover .topRow {
-	background: var(--background-modifier-hover, rgba(79,84,92,0.16));
+.titleRow {
+	align-items: center;
+	display: flex;
+	flex: 1;
+	gap: 6px;
+	min-width: 0;
 }
 
 .threadName {
-	color: var(--text-normal, var(--color-text-primary));
-	flex: 1;
-	font-size: 14px;
+	color: #5865f2;
+	font-size: 13px;
 	font-weight: 600;
-	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.messageBadge {
-	background: var(--background-secondary, rgba(79,84,92,0.24));
-	border-radius: 4px;
-	color: var(--text-link, var(--color-text-link));
-	flex-shrink: 0;
-	font-size: 13px;
-	font-weight: 500;
-	padding: 2px 8px;
-	white-space: nowrap;
+.threadName:hover {
+	text-decoration: underline;
 }
 
-.previewRow {
-	align-items: center;
-	display: flex;
-	gap: 6px;
-	padding: 0 4px;
+.threadNameClosed {
+	color: #80848e;
 }
 
-.avatar {
-	border-radius: 50%;
-	flex-shrink: 0;
-	height: 16px;
-	object-fit: cover;
-	width: 16px;
-}
-
-.avatarPlaceholder {
-	background: var(--background-secondary, rgba(79,84,92,0.24));
-	border-radius: 50%;
-	flex-shrink: 0;
-	height: 16px;
-	width: 16px;
-}
-
-.previewText {
-	color: var(--text-muted, var(--color-text-muted));
-	font-size: 13px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.previewAuthor {
-	color: var(--text-normal, var(--color-text-primary));
-	font-weight: 500;
-}
-
-.timestamp {
-	color: var(--text-muted, var(--color-text-muted));
+.messageCount {
+	color: #80848e;
 	flex-shrink: 0;
 	font-size: 12px;
+	white-space: nowrap;
+}
+
+.chevron {
+	color: #80848e;
+	flex-shrink: 0;
+	font-size: 14px;
+	margin-left: auto;
+}
+
+.preview {
+	align-items: flex-start;
+	border-top: 1px solid rgba(255,255,255,0.05);
+	display: flex;
+	gap: 8px;
+	padding: 8px 12px;
+}
+
+.miniAvatar {
+	border-radius: 50%;
+	flex-shrink: 0;
+	height: 20px;
+	object-fit: cover;
+	width: 20px;
+}
+
+.miniAvatarPlaceholder {
+	background: #4e5058;
+	border-radius: 50%;
+	flex-shrink: 0;
+	height: 20px;
+	width: 20px;
+}
+
+.previewTextWrap {
+	flex: 1;
+	min-width: 0;
+}
+
+.previewSender {
+	color: #dbdee1;
+	font-size: 12px;
+	font-weight: 600;
+	margin-bottom: 1px;
+}
+
+.previewMsg {
+	color: #80848e;
+	font-size: 12px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.previewTime {
+	color: #4e5058;
+	flex-shrink: 0;
+	font-size: 11px;
+	margin-top: 1px;
+	white-space: nowrap;
 }
