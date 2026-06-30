@@ -83,6 +83,7 @@ import {UserChannelRequestService} from '../user/services/UserChannelRequestServ
 import {UserContentRequestService} from '../user/services/UserContentRequestService';
 import {UserRelationshipRequestService} from '../user/services/UserRelationshipRequestService';
 import {UserService} from '../user/services/UserService';
+import {resolveRequestClientIp} from '../utils/IpUtils';
 import {VoicePresenceHeartbeatStore} from '../voice/VoicePresenceHeartbeatStore';
 import {VoiceService} from '../voice/VoiceService';
 import {WebhookRequestService} from '../webhook/WebhookRequestService';
@@ -365,7 +366,7 @@ function getLiveKitWebhookService(): LiveKitWebhookService | null {
 export const ServiceMiddleware = createMiddleware<HonoEnv>(async (ctx, next) => {
 	const apiContext = createApiContext({
 		requestId: ctx.get('requestId') ?? crypto.randomUUID(),
-		clientIp: ctx.req.header('x-forwarded-for') ?? null,
+		clientIp: resolveRequestClientIp(ctx.req.raw),
 		userAgent: ctx.req.header('user-agent') ?? null,
 	});
 	ctx.set('apiContext', apiContext);
