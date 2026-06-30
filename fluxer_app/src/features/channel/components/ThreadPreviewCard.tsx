@@ -47,13 +47,12 @@ export const ThreadPreviewCard = observer(({threadId, threadName, guildId, paren
 		}
 	}, [threadId, parentChannelId, guildId, isJoined]);
 
-	const avatarUrl =
-		preview?.lastMessageAuthorId && preview.lastMessageAuthorAvatar
-			? AvatarUtils.getUserAvatarURL({
-					id: preview.lastMessageAuthorId,
-					avatar: preview.lastMessageAuthorAvatar,
-				})
-			: null;
+	const avatarUrl = preview?.lastMessageAuthorId
+		? AvatarUtils.getUserAvatarURL({
+				id: preview.lastMessageAuthorId,
+				avatar: preview.lastMessageAuthorAvatar ?? null,
+			})
+		: null;
 
 	const timeAgo = preview?.lastMessageAt ? getRelativeDateString(preview.lastMessageAt, i18n) : null;
 

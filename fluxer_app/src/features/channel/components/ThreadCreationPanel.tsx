@@ -62,12 +62,16 @@ export const ThreadCreationPanel = observer(({
 		if (!trimmed || submitting) return;
 		setSubmitting(true);
 		try {
+			const resolvedName = threadName.trim() || (sourceMessagePreview ? sourceMessagePreview.slice(0, 100) : 'New Thread');
 			const thread = await ThreadCommands.create(channelId, {
-				name: threadName.trim(),
+				name: resolvedName,
 				source_message_id: sourceMessageId,
 			});
 			Threads.handleThreadCreate(thread);
 			Threads.handleThreadMemberAdd({threadId: thread.id});
+			if (sourceMessagePreview) {
+				await http.post(`/channels/${thread.id}/messages`, {body: {content: sourceMessagePreview}});
+			}
 			await http.post(`/channels/${thread.id}/messages`, {body: {content: trimmed}});
 			NavigationCommands.selectThread(guildId, channelId, thread.id);
 		} finally {
@@ -116,6 +120,7 @@ export const ThreadCreationPanel = observer(({
 						type="text"
 						maxLength={100}
 						value={threadName}
+						placeholder={sourceMessagePreview ? sourceMessagePreview.slice(0, 60) : undefined}
 						onChange={(e) => setThreadName(e.currentTarget.value)}
 						autoFocus
 						data-flx="channel.thread-creation-panel.name-input"
