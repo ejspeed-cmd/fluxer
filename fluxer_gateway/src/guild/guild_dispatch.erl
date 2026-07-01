@@ -26,7 +26,9 @@ normalize_event(Event) when is_binary(Event) ->
 
 -spec normalized_event_atom(atom() | binary()) -> event().
 normalized_event_atom(Event) when is_atom(Event) ->
-    Event.
+    Event;
+normalized_event_atom(_Event) ->
+    unknown_event.
 
 -spec handle_dispatch(term(), event_data(), guild_state()) -> {noreply, guild_state()}.
 handle_dispatch(Event, EventData, State) ->
