@@ -4,11 +4,11 @@ import type {ChannelID, GuildID, MessageID, UserID} from '../../BrandedTypes';
 import {BatchBuilder, fetchMany, fetchManyInChunks, fetchOne, upsertOne} from '../../database/CassandraQueryExecution';
 import {Db} from '../../database/CassandraTypes';
 import {buildPatchFromData, executeVersionedUpdate} from '../../database/CassandraVersionedUpdate';
-import type {ChannelRow, ThreadMemberRow} from '../../database/types/ChannelTypes';
+import type {ChannelRow, ThreadMemberRow, ThreadMembersByUserRow} from '../../database/types/ChannelTypes';
 import {CHANNEL_COLUMNS} from '../../database/types/ChannelTypes';
 import {Logger} from '../../Logger';
 import {Channel} from '../../models/Channel';
-import {Channels, ChannelsByGuild, PrivateChannels, ThreadMembers, ThreadsByChannel} from '../../Tables';
+import {Channels, ChannelsByGuild, PrivateChannels, ThreadMembers, ThreadMembersByUser, ThreadsByChannel} from '../../Tables';
 import {
 	privateChannelFanOutTargets,
 	privateChannelLastMessageIdPatch,
@@ -43,6 +43,10 @@ const FETCH_THREAD_MEMBER = ThreadMembers.select({
 
 const FETCH_THREAD_MEMBERS = ThreadMembers.select({
 	where: [ThreadMembers.where.eq('thread_id')],
+});
+
+const FETCH_JOINED_THREAD_IDS = ThreadMembersByUser.select({
+	where: [ThreadMembersByUser.where.eq('user_id')],
 });
 
 export class ChannelDataRepository extends IChannelDataRepository {
@@ -90,8 +94,12 @@ export class ChannelDataRepository extends IChannelDataRepository {
 		if (!existing) return;
 		const prev = existing.last_message_id ?? null;
 		if (prev !== null && messageId <= prev) return;
+		const patch: Partial<Record<string, unknown>> = {last_message_id: Db.set(messageId)};
+		if (existing.type === 11) {
+			patch.thread_message_count = Db.set((existing.thread_message_count ?? 0) + 1);
+		}
 		await upsertOne(
-			Channels.patchByPk({channel_id: channelId, soft_deleted: false}, {last_message_id: Db.set(messageId)}),
+			Channels.patchByPk({channel_id: channelId, soft_deleted: false}, patch as Parameters<typeof Channels.patchByPk>[1]),
 		);
 		void this.fanOutPrivateChannelLastMessageId(existing, messageId);
 	}
@@ -254,23 +262,34 @@ export class ChannelDataRepository extends IChannelDataRepository {
 		joinedAt: Date;
 		notificationOverride: number | null;
 	}): Promise<void> {
-		await upsertOne(
-			ThreadMembers.upsertAll({
-				thread_id: params.threadId,
-				user_id: params.userId,
-				joined_at: params.joinedAt,
-				notification_override: params.notificationOverride,
-			} as ThreadMemberRow),
-		);
+		await Promise.all([
+			upsertOne(
+				ThreadMembers.upsertAll({
+					thread_id: params.threadId,
+					user_id: params.userId,
+					joined_at: params.joinedAt,
+					notification_override: params.notificationOverride,
+				} as ThreadMemberRow),
+			),
+			upsertOne(
+				ThreadMembersByUser.upsertAll({
+					user_id: params.userId,
+					thread_id: params.threadId,
+				} as ThreadMembersByUserRow),
+			),
+		]);
 	}
 
 	async removeThreadMember(threadId: ChannelID, userId: UserID): Promise<void> {
-		await upsertOne(
-			ThreadMembers.deleteByPk({
-				thread_id: threadId,
-				user_id: userId,
-			}),
-		);
+		await Promise.all([
+			upsertOne(ThreadMembers.deleteByPk({thread_id: threadId, user_id: userId})),
+			upsertOne(ThreadMembersByUser.deleteByPk({user_id: userId, thread_id: threadId})),
+		]);
+	}
+
+	async listJoinedThreadIds(userId: UserID): Promise<Array<ChannelID>> {
+		const rows = await fetchMany<ThreadMembersByUserRow>(FETCH_JOINED_THREAD_IDS.bind({user_id: userId}));
+		return rows.map((r) => r.thread_id);
 	}
 
 	async listThreadMembers(threadId: ChannelID): Promise<Array<{userId: UserID; joinedAt: Date}>> {

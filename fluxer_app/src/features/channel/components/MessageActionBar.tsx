@@ -52,6 +52,7 @@ import {
 	ForwardIcon,
 	MarkAsUnreadIcon,
 	MoreIcon,
+	OpenLinkIcon,
 	PinIcon,
 	ReplyIcon,
 	RetryIcon,
@@ -62,6 +63,7 @@ import * as ContextMenuCommands from '@app/features/ui/commands/ContextMenuComma
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import {modal} from '@app/features/ui/commands/ModalCommands';
 import * as PopoutCommands from '@app/features/ui/commands/PopoutCommands';
+import * as MessageCommands from '@app/features/messaging/commands/MessageCommands';
 import FocusRing from '@app/features/ui/focus_ring/FocusRing';
 import {Popout} from '@app/features/ui/popover/PopoverPopout';
 import ContextMenu from '@app/features/ui/state/ContextMenu';
@@ -71,7 +73,7 @@ import {canUseWindowFocusedActivationClick} from '@app/features/ui/utils/WindowF
 import UserSettings from '@app/features/user/state/UserSettings';
 import * as AvatarUtils from '@app/features/user/utils/AvatarUtils';
 import Threads from '@app/features/channel/state/Threads';
-import {MessageStates} from '@fluxer/constants/src/ChannelConstants';
+import {MessageStates, MessageTypes} from '@fluxer/constants/src/ChannelConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
 import {ThreadIcon} from '@app/features/ui/components/icons/ThreadIcon';
@@ -106,6 +108,10 @@ const FORWARD_DESCRIPTOR = msg({
 const VIEW_THREAD_DESCRIPTOR = msg({
 	message: 'View Thread',
 	comment: 'Tooltip on the view-thread button shown in the hover action bar when a message already has a thread.',
+});
+const JUMP_DESCRIPTOR = msg({
+	message: 'Jump',
+	comment: 'Tooltip on the jump button shown on the source message inside a thread panel.',
 });
 const shiftKeyManager = (() => {
 	let isShiftPressed = false;
@@ -396,7 +402,7 @@ export const MessageActionBarCore: React.FC<MessageActionBarCoreProps> = observe
 			canForwardMessage,
 			shouldRenderSuppressEmbeds,
 		} = permissions;
-		const supportsInteractiveActions = useMemo(() => !isClientSystemMessage(message), [message]);
+		const supportsInteractiveActions = useMemo(() => !isClientSystemMessage(message) && message.type !== MessageTypes.THREAD_STARTER_MESSAGE, [message]);
 		const handlers = useMemo(
 			() => createMessageActionHandlers(message, {i18n, channel: permissions.channel}),
 			[message, i18n.locale, permissions.channel],
@@ -415,7 +421,19 @@ export const MessageActionBarCore: React.FC<MessageActionBarCoreProps> = observe
 				);
 			}
 		}, [message.threadId, permissions.channel]);
+		const handleJump = useCallback(() => {
+			const channel = permissions.channel;
+			const thread = channel.type === 11 ? Threads.getThread(channel.id) : null;
+			const sourceMessageId = thread?.threadSourceMessageId?.toString();
+			const parentChannelId = thread?.threadParentChannelId;
+			if (!sourceMessageId || !parentChannelId) return;
+			void import('@app/features/navigation/commands/NavigationCommands').then(({selectChannel}) => {
+				selectChannel(channel.guildId ?? parentChannelId, parentChannelId);
+			});
+			MessageCommands.jumpToMessage({channelId: parentChannelId, messageId: sourceMessageId});
+		}, [permissions.channel]);
 		const channel = permissions.channel;
+		const isThreadSourceMessage = message.type === MessageTypes.THREAD_STARTER_MESSAGE;
 		const quickReactionEmojis = useQuickReactionEmojis(
 			channel,
 			3,
@@ -577,8 +595,21 @@ export const MessageActionBarCore: React.FC<MessageActionBarCoreProps> = observe
 				data-flx="channel.message-action-bar.message-action-bar-core.action-bar-container"
 			>
 				<div className={styles.actionBar} data-flx="channel.message-action-bar.message-action-bar-core.action-bar">
-					{message.state === MessageStates.SENT &&
-						(onlyMoreButton ? (
+					{isThreadSourceMessage && message.state === MessageStates.SENT && (
+						<MessageActionBarButton
+							icon={
+								<OpenLinkIcon
+									size={20}
+									data-flx="channel.message-action-bar.message-action-bar-core.jump-icon"
+								/>
+							}
+							label={i18n._(JUMP_DESCRIPTOR)}
+							onClick={handleJump}
+							data-flx="channel.message-action-bar.message-action-bar-core.message-action-bar-button.jump"
+						/>
+					)}
+					{!isThreadSourceMessage && message.state === MessageStates.SENT &&
+						(onlyMoreButton && !isThreadSourceMessage ? (
 							<MessageActionBarButton
 								ref={moreOptionsButtonRef}
 								icon={<MoreIcon size={20} data-flx="channel.message-action-bar.message-action-bar-core.more-icon" />}

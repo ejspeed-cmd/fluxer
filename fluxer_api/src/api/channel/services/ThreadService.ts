@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {ChannelTypes, Permissions, ThreadStates} from '@fluxer/constants/src/ChannelConstants';
+import {ChannelTypes, MessageTypes, Permissions, ThreadStates} from '@fluxer/constants/src/ChannelConstants';
 import type {ThreadState} from '@fluxer/constants/src/ChannelConstants';
 import {UnknownChannelError} from '@fluxer/errors/src/domains/channel/UnknownChannelError';
 import {InvalidChannelTypeError} from '@fluxer/errors/src/domains/channel/InvalidChannelTypeError';
 import {MissingPermissionsError} from '@fluxer/errors/src/domains/core/MissingPermissionsError';
 import type {CreateThreadRequest, UpdateThreadRequest} from '@fluxer/schema/src/domains/channel/ChannelRequestSchemas';
 import type {ThreadResponse} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
+import * as BucketUtils from '@fluxer/snowflake/src/SnowflakeBuckets';
 import type {ChannelID, GuildID, UserID} from '../../BrandedTypes';
 import {createChannelID, createMessageID} from '../../BrandedTypes';
 import type {IGatewayService} from '../../infrastructure/IGatewayService';
@@ -69,6 +70,7 @@ export class ThreadService {
 			thread_state: ThreadStates.OPEN as ThreadState,
 			thread_expires_at: expiresAt,
 			thread_source_message_id: data.source_message_id ? createMessageID(BigInt(data.source_message_id.toString())) : null,
+			thread_message_count: 0,
 			soft_deleted: false,
 			version: 1,
 		};
@@ -90,6 +92,34 @@ export class ThreadService {
 					},
 					sourceMessage.toRow(),
 				);
+				const starterMessageId = createMessageID(await this.snowflakeService.generate());
+				await this.channelRepository.messages.upsertMessage({
+					channel_id: threadId,
+					bucket: BucketUtils.makeBucket(starterMessageId),
+					message_id: starterMessageId,
+					author_id: sourceMessage.authorId,
+					type: MessageTypes.THREAD_STARTER_MESSAGE,
+					webhook_id: null,
+					webhook_name: null,
+					webhook_avatar_hash: null,
+					content: sourceMessage.content,
+					edited_timestamp: sourceMessage.editedTimestamp,
+					pinned_timestamp: null,
+					flags: 0,
+					mention_everyone: false,
+					mention_users: null,
+					mention_roles: null,
+					mention_channels: null,
+					attachments: null,
+					embeds: null,
+					sticker_items: null,
+					message_reference: null,
+					message_snapshots: null,
+					call: null,
+					nsfw_emojis: null,
+					has_reaction: null,
+					version: 1,
+				});
 			}
 		}
 
@@ -247,13 +277,22 @@ export class ThreadService {
 		}
 	}
 
+	async listJoinedThreads(params: {userId: UserID}): Promise<Array<ThreadResponse>> {
+		const {userId} = params;
+		const threadIds = await this.channelRepository.channelData.listJoinedThreadIds(userId);
+		if (threadIds.length === 0) return [];
+		const threads = await this.channelRepository.channelData.listChannels(threadIds);
+		const filtered = threads.filter((t) => t.type === ChannelTypes.GUILD_THREAD);
+		return this.enrichThreadsWithLastMessage(filtered);
+	}
+
 	async enrichThreadsWithLastMessage(threads: Array<Channel>): Promise<Array<ThreadResponse>> {
 		return Promise.all(
 			threads.map(async (thread) => {
+				const count = thread.threadMessageCount;
 				try {
-					const messages = await this.channelRepository.messages.listMessages(thread.id, undefined, 50);
+					const messages = await this.channelRepository.messages.listMessages(thread.id, undefined, 1);
 					const last = messages[0] ?? null;
-					const count = messages.length;
 					if (!last || !last.authorId) {
 						return {...mapThreadToResponse(thread), thread_member_count: count};
 					}

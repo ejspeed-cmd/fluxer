@@ -103,7 +103,9 @@ class ThreadStore {
 	}
 
 	getJoinedThreadsForChannel(channelId: string): ReadonlyArray<Thread> {
-		return this.getThreadsForChannel(channelId).filter((t) => this.joinedThreadIds.has(t.id));
+		return this.getThreadsForChannel(channelId).filter(
+			(t) => this.joinedThreadIds.has(t.id) && t.isOpen(),
+		);
 	}
 
 	isJoined(threadId: string): boolean {

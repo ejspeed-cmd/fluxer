@@ -145,6 +145,8 @@ import {
 	type PrivateChannelRow,
 	THREAD_MEMBER_COLUMNS,
 	type ThreadMemberRow,
+	THREAD_MEMBERS_BY_USER_COLUMNS,
+	type ThreadMembersByUserRow,
 	THREADS_BY_CHANNEL_COLUMNS,
 	type ThreadsByChannelRow,
 	WEBHOOK_COLUMNS,
@@ -621,6 +623,12 @@ export const ThreadsByChannel = defineTable<ThreadsByChannelRow, 'channel_id' | 
 	columns: THREADS_BY_CHANNEL_COLUMNS,
 	primaryKey: ['channel_id', 'thread_id'],
 	partitionKey: ['channel_id'],
+});
+export const ThreadMembersByUser = defineTable<ThreadMembersByUserRow, 'user_id' | 'thread_id', 'user_id'>({
+	name: 'thread_members_by_user_id',
+	columns: THREAD_MEMBERS_BY_USER_COLUMNS,
+	primaryKey: ['user_id', 'thread_id'],
+	partitionKey: ['user_id'],
 });
 
 interface PinnedDmRow {

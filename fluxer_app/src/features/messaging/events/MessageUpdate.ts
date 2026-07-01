@@ -37,6 +37,9 @@ export function handleMessageUpdate(data: MessageUpdatePayload, _context: Gatewa
 	SavedMessages.handleMessageUpdate(message);
 	ChannelPins.handleMessageUpdate(message);
 	Messages.handleMessageUpdate({message});
+	if (message.thread_id && message.channel_id !== message.thread_id) {
+		Messages.updateThreadSourceCopy(message.thread_id, message.id, message.content ?? '', message.edited_timestamp);
+	}
 	MessageReferences.handleMessageUpdate(message);
 	MentionFeed.handleMessageUpdate(message);
 	if (message.channel_id && message.call) {

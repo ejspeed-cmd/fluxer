@@ -47,6 +47,7 @@ export const MessageTypes = {
 	CHANNEL_PINNED_MESSAGE: 6,
 	USER_JOIN: 7,
 	REPLY: 19,
+	THREAD_STARTER_MESSAGE: 21,
 	CLIENT_SYSTEM: 99,
 } as const;
 
@@ -62,6 +63,7 @@ const MESSAGE_TYPE_DELETABLE = {
 	[MessageTypes.CALL]: false,
 	[MessageTypes.CHANNEL_NAME_CHANGE]: false,
 	[MessageTypes.CHANNEL_ICON_CHANGE]: false,
+	[MessageTypes.THREAD_STARTER_MESSAGE]: false,
 	[MessageTypes.CLIENT_SYSTEM]: false,
 } as const satisfies Record<MessageTypeValue, boolean>;
 

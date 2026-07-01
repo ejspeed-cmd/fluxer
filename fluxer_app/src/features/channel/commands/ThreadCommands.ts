@@ -51,6 +51,21 @@ export async function fetchList(channelId: string): Promise<ThreadResponse[]> {
 	}
 }
 
+export async function fetchJoined(): Promise<void> {
+	try {
+		const response = await http.get<ThreadResponse[]>('/users/@me/thread-members');
+		const threads = response.body ?? [];
+		const joinedIds: string[] = [];
+		for (const thread of threads) {
+			Threads.handleThreadCreate(thread);
+			joinedIds.push(thread.id);
+		}
+		Threads.handleThreadListSync({threads, joinedThreadIds: joinedIds});
+	} catch (error) {
+		logger.error('Failed to fetch joined threads:', error);
+	}
+}
+
 export async function join(channelId: string, threadId: string): Promise<void> {
 	await http.post(`/channels/${channelId}/threads/${threadId}/members/@me`, {body: {}});
 	Threads.handleThreadMemberAdd({threadId});

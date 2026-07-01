@@ -7,6 +7,7 @@ import Authentication from '@app/features/auth/state/Authentication';
 import AuthSession from '@app/features/auth/state/AuthSession';
 import ChannelPins from '@app/features/channel/state/ChannelPins';
 import Channels from '@app/features/channel/state/Channels';
+import * as ThreadCommands from '@app/features/channel/commands/ThreadCommands';
 import UserConnection from '@app/features/connection/state/UserConnection';
 import Emoji from '@app/features/emoji/state/Emoji';
 import Sticker from '@app/features/emoji/state/EmojiSticker';
@@ -186,4 +187,5 @@ function handleReadyInternal(data: ReadyPayload, context: GatewayHandlerContext)
 	Initialization.setReady(data);
 	context.setReady();
 	Messages.handleConnectionOpen();
+	void ThreadCommands.fetchJoined();
 }

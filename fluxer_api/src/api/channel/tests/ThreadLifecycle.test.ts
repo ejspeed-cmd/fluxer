@@ -329,4 +329,56 @@ describe('Thread Lifecycle', () => {
 		expect(afterLeave).toHaveLength(1);
 		expect(afterLeave[0].user_id).toBe(owner.userId);
 	});
+
+	it('GET /users/@me/thread-members returns threads joined by user', async () => {
+		const owner = await createTestAccount(harness);
+		const member = await createTestAccount(harness);
+		const guild = await createGuild(harness, owner.token, 'My Threads Guild');
+		const channel = await createChannel(harness, owner.token, guild.id, 'general');
+		const invite = await createChannelInvite(harness, owner.token, channel.id);
+		await acceptInvite(harness, member.token, invite.code);
+
+		const threadA = await createThread(harness, owner.token, channel.id, 'Thread A');
+		const threadB = await createThread(harness, owner.token, channel.id, 'Thread B');
+		await joinThread(harness, member.token, channel.id, threadA.id as string);
+
+		const ownerThreads = await createBuilder<Array<Record<string, unknown>>>(harness, owner.token)
+			.get('/users/@me/thread-members')
+			.execute();
+		const memberThreads = await createBuilder<Array<Record<string, unknown>>>(harness, member.token)
+			.get('/users/@me/thread-members')
+			.execute();
+
+		const ownerIds = ownerThreads.map((t) => t.id);
+		expect(ownerIds).toContain(threadA.id);
+		expect(ownerIds).toContain(threadB.id);
+
+		const memberIds = memberThreads.map((t) => t.id);
+		expect(memberIds).toContain(threadA.id);
+		expect(memberIds).not.toContain(threadB.id);
+	});
+
+	it('GET /users/@me/thread-members does not include thread after leaving', async () => {
+		const owner = await createTestAccount(harness);
+		const member = await createTestAccount(harness);
+		const guild = await createGuild(harness, owner.token, 'Leave Sync Guild');
+		const channel = await createChannel(harness, owner.token, guild.id, 'general');
+		const invite = await createChannelInvite(harness, owner.token, channel.id);
+		await acceptInvite(harness, member.token, invite.code);
+
+		const thread = await createThread(harness, owner.token, channel.id, 'Leave Test Thread');
+		await joinThread(harness, member.token, channel.id, thread.id as string);
+
+		const beforeLeave = await createBuilder<Array<Record<string, unknown>>>(harness, member.token)
+			.get('/users/@me/thread-members')
+			.execute();
+		expect(beforeLeave.map((t) => t.id)).toContain(thread.id);
+
+		await leaveThread(harness, member.token, channel.id, thread.id as string);
+
+		const afterLeave = await createBuilder<Array<Record<string, unknown>>>(harness, member.token)
+			.get('/users/@me/thread-members')
+			.execute();
+		expect(afterLeave.map((t) => t.id)).not.toContain(thread.id);
+	});
 });

@@ -77,6 +77,7 @@ export function getMessageComponent(
 		case MessageTypes.DEFAULT:
 		case MessageTypes.REPLY:
 		case MessageTypes.CLIENT_SYSTEM:
+		case MessageTypes.THREAD_STARTER_MESSAGE:
 			return <UserMessage data-flx="messaging.message-component-utils.get-message-component.user-message" />;
 		default:
 			return <UnknownMessage data-flx="messaging.message-component-utils.get-message-component.unknown-message--2" />;

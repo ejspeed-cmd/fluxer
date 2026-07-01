@@ -67,7 +67,7 @@ import {KeybindHint} from '@app/features/ui/keybind_hint/KeybindHint';
 import type {MenuGroupType, MenuItemType} from '@app/features/ui/menu_bottom_sheet/MenuBottomSheet';
 import UserSettings from '@app/features/user/state/UserSettings';
 import TtsUtils from '@app/features/voice/utils/VoiceTtsUtils';
-import {MessageStates, Permissions} from '@fluxer/constants/src/ChannelConstants';
+import {MessageStates, MessageTypes, Permissions} from '@fluxer/constants/src/ChannelConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
 import {useCallback, useEffect, useMemo, useState} from 'react';
@@ -203,7 +203,7 @@ export const useMessageActionMenuData = (
 	);
 	const [isSpeaking, setIsSpeaking] = useState(TtsUtils.isSpeaking());
 	const [voiceReady, setVoiceReady] = useState(TtsUtils.hasVoices());
-	const supportsInteractiveActions = !isClientSystemMessage(message);
+	const supportsInteractiveActions = !isClientSystemMessage(message) && message.type !== MessageTypes.THREAD_STARTER_MESSAGE;
 	useEffect(() => {
 		if (!TtsUtils.isSupported()) {
 			return;
@@ -283,6 +283,9 @@ export const useMessageActionMenuData = (
 		const interactionActions: Array<MenuItemType> = [];
 		const managementActions: Array<MenuItemType> = [];
 		const utilityActions: Array<MenuItemType> = [];
+		if (message.type === MessageTypes.THREAD_STARTER_MESSAGE) {
+			return [];
+		}
 		if (message.state === MessageStates.SENT) {
 			if (permissions?.canAddReactions && onOpenEmojiPicker) {
 				reactionActions.push({

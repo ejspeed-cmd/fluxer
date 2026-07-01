@@ -234,6 +234,10 @@ export class Message {
 					skipReactionHydration: options?.skipReactionHydration,
 				})
 			: undefined;
+		if (message.type === MessageTypes.THREAD_STARTER_MESSAGE && this.referencedMessage && message.content == null) {
+			this.content = this.referencedMessage.content;
+			this.editedTimestamp = this.referencedMessage.editedTimestamp;
+		}
 		this.messageSnapshots = message.message_snapshots ? Object.freeze(message.message_snapshots) : undefined;
 		this.call = transformMessageCall(message.call);
 		this.threadId = message.thread_id ?? null;
@@ -265,7 +269,7 @@ export class Message {
 
 	isUserMessage(): boolean {
 		return (
-			this.type === MessageTypes.DEFAULT || this.type === MessageTypes.REPLY || this.type === MessageTypes.CLIENT_SYSTEM
+			this.type === MessageTypes.DEFAULT || this.type === MessageTypes.REPLY || this.type === MessageTypes.CLIENT_SYSTEM || this.type === MessageTypes.THREAD_STARTER_MESSAGE
 		);
 	}
 
@@ -342,6 +346,8 @@ export class Message {
 				state: updates.state ?? this.state,
 				nonce: updates.nonce ?? this.nonce,
 				blocked: updates.blocked ?? this.blocked,
+				thread_id: updates.thread_id ?? this.threadId ?? undefined,
+				thread_name: updates.thread_name ?? this.threadName ?? undefined,
 				_allowedMentions: updates._allowedMentions ?? this._allowedMentions,
 				_favoriteMemeId: updates._favoriteMemeId ?? this._favoriteMemeId,
 			},

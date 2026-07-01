@@ -15,7 +15,7 @@ import Relationships from '@app/features/relationship/state/Relationships';
 import Dimension from '@app/features/ui/state/Dimension';
 import Users from '@app/features/user/state/Users';
 import {FAVORITES_GUILD_ID, ME} from '@fluxer/constants/src/AppConstants';
-import {MessageStates} from '@fluxer/constants/src/ChannelConstants';
+import {MessageStates, MessageTypes} from '@fluxer/constants/src/ChannelConstants';
 import {type JumpType, JumpTypes} from '@fluxer/constants/src/JumpConstants';
 import {MAX_MESSAGES_PER_CHANNEL} from '@fluxer/constants/src/LimitConstants';
 import type {ChannelId} from '@fluxer/schema/src/branded/WireIds';
@@ -622,6 +622,20 @@ class Messages {
 		this.commitMessages(updated);
 		this.notifyChange();
 		return true;
+	}
+
+	@action
+	updateThreadSourceCopy(threadId: string, _originalMessageId: string, content: string, editedTimestamp?: string | null): void {
+		const bucket = ChannelMessages.get(threadId);
+		if (!bucket) return;
+		const updated = bucket.patchMatching(
+			(msg) => msg.type === MessageTypes.THREAD_STARTER_MESSAGE,
+			(msg) => msg.withUpdates({content, edited_timestamp: editedTimestamp ?? undefined}),
+		);
+		if (updated) {
+			this.commitMessages(updated);
+			this.notifyChange();
+		}
 	}
 
 	@action

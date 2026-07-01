@@ -33,6 +33,7 @@ export const MessageTypeSchema = withOpenApiType(
 			],
 			[MessageTypes.USER_JOIN, 'USER_JOIN', 'A system message indicating a user joined'],
 			[MessageTypes.REPLY, 'REPLY', 'A reply message'],
+			[MessageTypes.THREAD_STARTER_MESSAGE, 'THREAD_STARTER_MESSAGE', 'The first message in a thread created from a channel message'],
 		],
 		'The type of message',
 	),

@@ -69,9 +69,6 @@ export const ThreadCreationPanel = observer(({
 			});
 			Threads.handleThreadCreate(thread);
 			Threads.handleThreadMemberAdd({threadId: thread.id});
-			if (sourceMessagePreview) {
-				await http.post(`/channels/${thread.id}/messages`, {body: {content: sourceMessagePreview}});
-			}
 			await http.post(`/channels/${thread.id}/messages`, {body: {content: trimmed}});
 			NavigationCommands.selectThread(guildId, channelId, thread.id);
 		} finally {

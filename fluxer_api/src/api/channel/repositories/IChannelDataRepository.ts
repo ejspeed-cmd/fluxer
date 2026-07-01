@@ -34,6 +34,8 @@ export abstract class IChannelDataRepository {
 
 	abstract removeThreadMember(threadId: ChannelID, userId: UserID): Promise<void>;
 
+	abstract listJoinedThreadIds(userId: UserID): Promise<Array<ChannelID>>;
+
 	abstract listThreadMembers(threadId: ChannelID): Promise<Array<{userId: UserID; joinedAt: Date}>>;
 
 	abstract isThreadMember(threadId: ChannelID, userId: UserID): Promise<boolean>;

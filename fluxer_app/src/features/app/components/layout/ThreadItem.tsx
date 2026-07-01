@@ -40,10 +40,6 @@ const DELETE_THREAD_DESCRIPTOR = msg({
 	message: 'Delete Thread',
 	comment: 'Context menu item to delete a thread.',
 });
-const CLOSED_DESCRIPTOR = msg({
-	message: 'Closed',
-	comment: 'Badge label for a closed thread.',
-});
 const THREAD_CLOSED_DESCRIPTOR = msg({
 	message: 'Thread closed',
 	comment: 'Toast shown after closing a thread.',
@@ -155,6 +151,10 @@ export const ThreadItem = observer(({guild, thread, isSelectedByPath}: ThreadIte
 				data-channel-id={thread.id}
 				data-channel-list-focus-item="true"
 			>
+				<div
+					className={clsx(styles.stateIndicator, thread.isOpen() ? styles.stateIndicatorOpen : styles.stateIndicatorClosed)}
+					data-flx="app.thread-item.state-indicator"
+				/>
 				<div className={styles.connector} data-flx="app.thread-item.connector" />
 				<span
 					className={clsx(styles.name, isSelectedByPath && styles.nameSelected)}
@@ -162,11 +162,6 @@ export const ThreadItem = observer(({guild, thread, isSelectedByPath}: ThreadIte
 				>
 					{thread.name}
 				</span>
-				{!thread.isOpen() && (
-					<span className={styles.closedBadge} data-flx="app.thread-item.closed-badge">
-						{i18n._(CLOSED_DESCRIPTOR)}
-					</span>
-				)}
 			</div>
 		</FocusRing>
 	);

@@ -926,6 +926,7 @@ export class GuildOperationsService {
 					thread_state: null,
 					thread_expires_at: null,
 					thread_source_message_id: null,
+					thread_message_count: null,
 					version: 1,
 				}),
 			);
@@ -1127,6 +1128,7 @@ export class GuildOperationsService {
 					thread_state: null,
 					thread_expires_at: null,
 					thread_source_message_id: null,
+					thread_message_count: null,
 					version: 1,
 				}),
 			);
@@ -1182,6 +1184,7 @@ export class GuildOperationsService {
 					thread_state: null,
 					thread_expires_at: null,
 					thread_source_message_id: null,
+					thread_message_count: null,
 					version: 1,
 				}),
 			);

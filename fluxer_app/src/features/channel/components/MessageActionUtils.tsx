@@ -216,7 +216,7 @@ function getMessagePermissionsForChannel(message: Message, channel: Channel): Me
 				Permission.can(Permissions.ADD_REACTIONS, {channelId: message.channelId}) &&
 				passesVerification &&
 				!isCurrentUserTimedOut));
-	const canEditMessage = !interactionsBlocked && !sendMessageDisabled && message.isCurrentUserAuthor();
+	const canEditMessage = !interactionsBlocked && !sendMessageDisabled && message.isCurrentUserAuthor() && message.type !== MessageTypes.THREAD_STARTER_MESSAGE;
 	const canDeleteMessage =
 		!interactionsBlocked &&
 		messageTypeDeletable &&

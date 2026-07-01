@@ -87,3 +87,22 @@
 	padding: 1px 4px;
 	text-transform: uppercase;
 }
+
+.stateIndicator {
+	border-radius: 0 624.9375rem 624.9375rem 0;
+	flex-shrink: 0;
+	height: 8px;
+	left: 0;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 8px;
+}
+
+.stateIndicatorOpen {
+	background-color: var(--brand-primary);
+}
+
+.stateIndicatorClosed {
+	background-color: var(--background-modifier-accent);
+}

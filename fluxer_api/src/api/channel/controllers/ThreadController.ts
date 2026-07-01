@@ -21,6 +21,26 @@ import {Validator} from '../../Validator';
 import {mapThreadToResponse} from '../services/ThreadService';
 
 export function ThreadController(app: HonoApp) {
+	app.get(
+		'/users/@me/thread-members',
+		RateLimitMiddleware(RateLimitConfigs.THREAD_GET),
+		LoginRequired,
+		OpenAPI({
+			operationId: 'get_my_thread_memberships',
+			summary: 'Get joined threads',
+			description: 'Returns all threads the current user has joined, with last message preview.',
+			responseSchema: z.array(ThreadResponse),
+			statusCode: 200,
+			security: ['botToken', 'bearerToken', 'sessionToken'],
+			tags: 'Threads',
+		}),
+		async (ctx) => {
+			const userId = ctx.get('user').id;
+			const threads = await ctx.get('threadService').listJoinedThreads({userId});
+			return ctx.json(threads);
+		},
+	);
+
 	app.post(
 		'/channels/:channel_id/threads',
 		RateLimitMiddleware(RateLimitConfigs.THREAD_CREATE),

@@ -40,6 +40,7 @@ export class Channel {
 	readonly threadState: ThreadState | null;
 	readonly threadExpiresAt: Date | null;
 	readonly threadSourceMessageId: MessageID | null;
+	readonly threadMessageCount: number;
 
 	get isThread(): boolean {
 		return this.type === ChannelTypes.GUILD_THREAD;
@@ -85,6 +86,7 @@ export class Channel {
 		this.threadState = (row.thread_state ?? null) as ThreadState | null;
 		this.threadExpiresAt = row.thread_expires_at ?? null;
 		this.threadSourceMessageId = row.thread_source_message_id ?? null;
+		this.threadMessageCount = row.thread_message_count ?? 0;
 	}
 
 	toRow(): ChannelRow {
@@ -129,6 +131,7 @@ export class Channel {
 			thread_state: this.threadState,
 			thread_expires_at: this.threadExpiresAt,
 			thread_source_message_id: this.threadSourceMessageId,
+			thread_message_count: this.threadMessageCount,
 		};
 	}
 }
