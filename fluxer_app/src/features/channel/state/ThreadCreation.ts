@@ -11,6 +11,7 @@ export interface PendingThread {
 
 class ThreadCreationStore {
 	@observable pending: PendingThread | null = null;
+	@observable createdThreadId: string | null = null;
 
 	constructor() {
 		makeAutoObservable(this, {}, {autoBind: true});
@@ -19,11 +20,19 @@ class ThreadCreationStore {
 	@action
 	open(params: PendingThread): void {
 		this.pending = params;
+		this.createdThreadId = null;
+	}
+
+	@action
+	setCreated(threadId: string): void {
+		this.createdThreadId = threadId;
+		this.pending = null;
 	}
 
 	@action
 	close(): void {
 		this.pending = null;
+		this.createdThreadId = null;
 	}
 }
 

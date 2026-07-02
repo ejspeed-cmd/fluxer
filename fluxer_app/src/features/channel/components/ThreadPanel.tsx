@@ -12,17 +12,12 @@ import FocusRing from '@app/features/ui/focus_ring/FocusRing';
 import {MAX_MESSAGES_PER_CHANNEL} from '@fluxer/constants/src/LimitConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
-import {XIcon} from '@phosphor-icons/react';
-import {observer} from 'mobx-react-lite';
+import {XIcon} from '@phosphor-icons/react';import {observer} from 'mobx-react-lite';
 import {useEffect} from 'react';
 
 const CLOSE_DESCRIPTOR = msg({
 	message: 'Close thread panel',
 	comment: 'Accessible label on the close button in the thread side panel.',
-});
-const STARTED_BY_DESCRIPTOR = msg({
-	message: 'Started by {username}',
-	comment: 'Subtitle shown under the thread title in the thread side panel.',
 });
 
 interface ThreadPanelProps {
@@ -35,8 +30,7 @@ export const ThreadPanel = observer(({threadId, onClose}: ThreadPanelProps) => {
 	const thread = Threads.getThread(threadId);
 	const channel = Channels.getChannel(threadId);
 
-	const name = thread?.name ?? channel?.name ?? '';
-	const creatorUsername = thread?.threadCreatorUsername ?? null;
+	const threadName = thread?.name ?? channel?.name ?? '';
 
 	useEffect(() => {
 		void MessageCommands.fetchMessages(threadId, null, null, MAX_MESSAGES_PER_CHANNEL);
@@ -45,18 +39,10 @@ export const ThreadPanel = observer(({threadId, onClose}: ThreadPanelProps) => {
 	return (
 		<div className={styles.panel} data-flx="channel.thread-panel.panel">
 			<div className={styles.header} data-flx="channel.thread-panel.header">
-				<ThreadIcon size={20} className={styles.headerIcon} data-flx="channel.thread-panel.header-icon" />
-				<div className={styles.headerText}>
-					<div className={styles.headerTitle} data-flx="channel.thread-panel.header-title">
-						{name}
-					</div>
-					{creatorUsername && (
-						<div className={styles.headerStartedBy} data-flx="channel.thread-panel.header-started-by">
-							{i18n._(STARTED_BY_DESCRIPTOR, {username: ''})}
-							<span className={styles.headerStartedByAuthor}>{creatorUsername}</span>
-						</div>
-					)}
-				</div>
+				<ThreadIcon size={16} className={styles.threadIcon} aria-hidden="true" data-flx="channel.thread-panel.thread-icon" />
+				<span className={styles.threadName} data-flx="channel.thread-panel.thread-name">
+					{threadName}
+				</span>
 				<FocusRing data-flx="channel.thread-panel.focus-ring">
 					<button
 						type="button"
@@ -65,7 +51,7 @@ export const ThreadPanel = observer(({threadId, onClose}: ThreadPanelProps) => {
 						onClick={onClose}
 						data-flx="channel.thread-panel.close-button.click"
 					>
-						<XIcon size={20} />
+						<XIcon size={18} />
 					</button>
 				</FocusRing>
 			</div>

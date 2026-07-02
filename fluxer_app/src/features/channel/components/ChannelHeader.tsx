@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {Routes} from '@app/app/Routes';
+import Channels from '@app/features/channel/state/Channels';
+import * as NavigationCommands from '@app/features/navigation/commands/NavigationCommands';
+import {ThreadIcon} from '@app/features/ui/components/icons/ThreadIcon';
 import Accessibility from '@app/features/accessibility/state/Accessibility';
 import {NativeDragRegion} from '@app/features/app/components/layout/NativeDragRegion';
 import {GroupDMAvatar} from '@app/features/app/components/shared/GroupDMAvatar';
@@ -769,55 +772,96 @@ export const ChannelHeader = observer(
 											onContextMenu={handleContextMenu}
 											data-flx="channel.channel-header.channel-info-container.context-menu"
 										>
-											{ChannelUtils.getIcon(channel, {className: styles.channelIcon}, e2eeIconOptions)}
-											<Tooltip
-												text={isGuildChannelNameOverflowing && channelName ? channelName : ''}
-												data-flx="channel.channel-header.tooltip--8"
-											>
-												<span
-													ref={guildChannelNameRef}
-													className={styles.channelName}
-													data-flx="channel.channel-header.channel-name--8"
-												>
-													{channelName}
-												</span>
-											</Tooltip>
-											{channel.topic && (
+											{channel.type === ChannelTypes.GUILD_THREAD ? (
 												<>
-													<span className={styles.topicDivider} data-flx="channel.channel-header.topic-divider">
-														•
+													<button
+														type="button"
+														className={styles.threadBreadcrumbParent}
+														onClick={() => {
+															if (channel.parentId && channel.guildId) {
+																NavigationCommands.selectChannel(channel.guildId, channel.parentId);
+															}
+														}}
+														data-flx="channel.channel-header.thread-breadcrumb-parent.click"
+													>
+														{ChannelUtils.getIcon(
+															Channels.getChannel(channel.parentId ?? '') ?? channel,
+															{className: styles.channelIcon},
+														)}
+														<span className={styles.threadBreadcrumbParentName} data-flx="channel.channel-header.thread-breadcrumb-parent-name">
+															{Channels.getChannel(channel.parentId ?? '')?.name ?? ''}
+														</span>
+													</button>
+													<span className={styles.threadBreadcrumbSeparator} aria-hidden="true" data-flx="channel.channel-header.thread-breadcrumb-separator">
+														›
 													</span>
-													<div className={styles.topicContainer} data-flx="channel.channel-header.topic-container">
-														<FocusRing offset={-2} data-flx="channel.channel-header.focus-ring--6">
-															<div
-																role="button"
-																ref={topicButtonRef}
-																className={clsx(
-																	markupStyles.markup,
-																	styles.topicButton,
-																	isTopicOverflowing && styles.topicButtonOverflow,
-																)}
-																onClick={handleOpenChannelTopic}
-																onKeyDown={(e) => {
-																	if (!isKeyboardActivationKey(e.key)) return;
-																	e.preventDefault();
-																	handleOpenChannelTopic();
-																}}
-																tabIndex={0}
-																data-flx="channel.channel-header.topic-button.push"
-															>
-																<SafeMarkdown
-																	content={channel.topic}
-																	options={{
-																		context: MarkdownContext.RESTRICTED_INLINE_REPLY,
-																		disableInteractions: true,
-																		channelId: channel.id,
-																	}}
-																	data-flx="channel.channel-header.safe-markdown"
-																/>
+													<ThreadIcon size={11} className={styles.threadBreadcrumbIcon} aria-hidden="true" data-flx="channel.channel-header.thread-icon" />
+													<Tooltip
+														text={isGuildChannelNameOverflowing && channelName ? channelName : ''}
+														data-flx="channel.channel-header.tooltip--8"
+													>
+														<span
+															ref={guildChannelNameRef}
+															className={styles.channelName}
+															data-flx="channel.channel-header.channel-name--8"
+														>
+															{channelName}
+														</span>
+													</Tooltip>
+												</>
+											) : (
+												<>
+													{ChannelUtils.getIcon(channel, {className: styles.channelIcon}, e2eeIconOptions)}
+													<Tooltip
+														text={isGuildChannelNameOverflowing && channelName ? channelName : ''}
+														data-flx="channel.channel-header.tooltip--8"
+													>
+														<span
+															ref={guildChannelNameRef}
+															className={styles.channelName}
+															data-flx="channel.channel-header.channel-name--8"
+														>
+															{channelName}
+														</span>
+													</Tooltip>
+													{channel.topic && (
+														<>
+															<span className={styles.topicDivider} data-flx="channel.channel-header.topic-divider">
+																•
+															</span>
+															<div className={styles.topicContainer} data-flx="channel.channel-header.topic-container">
+																<FocusRing offset={-2} data-flx="channel.channel-header.focus-ring--6">
+																	<div
+																		role="button"
+																		ref={topicButtonRef}
+																		className={clsx(
+																			markupStyles.markup,
+																			styles.topicButton,
+																			isTopicOverflowing && styles.topicButtonOverflow,
+																		)}
+																		onClick={handleOpenChannelTopic}
+																		onKeyDown={(e) => {
+																			if (!isKeyboardActivationKey(e.key)) return;
+																			e.preventDefault();
+																			handleOpenChannelTopic();
+																		}}
+																		tabIndex={0}
+																		data-flx="channel.channel-header.topic-button.push"
+																	>
+																		<SafeMarkdown
+																			content={channel.topic}
+																			options={{
+																				context: MarkdownContext.RESTRICTED_INLINE_REPLY,
+																				disableInteractions: true,
+																				channelId: channel.id,
+																			}}
+																			data-flx="channel.channel-header.safe-markdown"
+																		/>
+																	</div>
+																</FocusRing>
 															</div>
-														</FocusRing>
-													</div>
+														</>
+													)}
 												</>
 											)}
 										</div>

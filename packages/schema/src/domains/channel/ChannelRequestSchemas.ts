@@ -369,7 +369,7 @@ export const StreamPreviewUploadUrlResponseSchema = z.object({
 export type StreamPreviewUploadUrlResponseSchema = z.infer<typeof StreamPreviewUploadUrlResponseSchema>;
 
 export const CreateThreadRequest = z.object({
-	name: createStringType(1, 100).describe('The name of the thread (1-100 characters)'),
+	name: createStringType(1, 36).describe('The name of the thread (1-36 characters)'),
 	expires_in_ms: z
 		.number()
 		.int()
@@ -383,7 +383,7 @@ export const CreateThreadRequest = z.object({
 export type CreateThreadRequest = z.infer<typeof CreateThreadRequest>;
 
 export const UpdateThreadRequest = z.object({
-	name: createStringType(1, 100).optional().describe('New thread name'),
+	name: createStringType(1, 36).optional().describe('New thread name'),
 	state: z.number().int().min(0).max(2).optional().describe('Thread state: 0=open, 1=closed, 2=archived'),
 	expires_in_ms: z
 		.number()

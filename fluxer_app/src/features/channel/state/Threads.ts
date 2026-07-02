@@ -4,6 +4,7 @@ import {Channel} from '@app/features/channel/models/Channel';
 import Channels from '@app/features/channel/state/Channels';
 import type {ThreadPreviewCard, ThreadResponse} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
 import {action, makeAutoObservable, observable} from 'mobx';
+import Permission from '@app/features/permissions/state/Permission';
 
 export interface ThreadPreview {
 	lastMessagePreview: string | null;
@@ -129,6 +130,7 @@ class ThreadStore {
 		}
 		this.threadsByChannel.get(parentId)!.add(data.id);
 		Channels.handleChannelCreate({channel: thread.toChannel().toJSON()});
+		Permission.handleChannelUpdate(data.id);
 	}
 
 	@action

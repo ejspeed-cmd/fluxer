@@ -179,6 +179,9 @@ export const GuildChannelView = observer(({channelId, guildId}: GuildChannelView
 		if (threadId && ThreadCreation.pending) {
 			ThreadCreation.close();
 		}
+		if (threadId && ThreadCreation.createdThreadId) {
+			ThreadCreation.close();
+		}
 	}, [threadId]);
 
 	useEffect(() => {
@@ -596,10 +599,11 @@ export const GuildChannelView = observer(({channelId, guildId}: GuildChannelView
 						onClose={() => ThreadCreation.close()}
 						data-flx="channel.channel-view.guild-channel-view.thread-creation-panel"
 					/>
-				) : threadId ? (
+				) : (ThreadCreation.createdThreadId ?? threadId) ? (
 					<ThreadPanel
-						threadId={threadId}
+						threadId={(ThreadCreation.createdThreadId ?? threadId)!}
 						onClose={() => {
+							ThreadCreation.close();
 							if (guildId && channel.id) {
 								NavigationCommands.closeThread(guildId, channel.id);
 							}
@@ -614,7 +618,7 @@ export const GuildChannelView = observer(({channelId, guildId}: GuildChannelView
 					/>
 				) : null
 			}
-			showMemberListDivider={!threadId && !ThreadCreation.pending && shouldRenderMemberList && !isSearchActive}
+			showMemberListDivider={!threadId && !ThreadCreation.pending && !ThreadCreation.createdThreadId && shouldRenderMemberList && !isSearchActive}
 			data-flx="channel.channel-view.guild-channel-view.channel-view-scaffold"
 		/>
 	);

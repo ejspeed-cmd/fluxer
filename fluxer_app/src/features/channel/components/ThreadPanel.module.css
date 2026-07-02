@@ -1,5 +1,5 @@
 .panel {
-	border-left: 1px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
+	border-left: 1px solid var(--background-modifier-accent);
 	display: flex;
 	flex-direction: column;
 	min-width: 360px;
@@ -8,57 +8,48 @@
 
 .header {
 	align-items: center;
-	border-bottom: 1px solid var(--color-background-modifier-accent, rgba(79,84,92,0.48));
+	border-bottom: 1px solid var(--background-modifier-accent);
 	display: flex;
 	flex-shrink: 0;
 	gap: 8px;
 	height: 48px;
-	padding: 0 16px;
+	padding: 0 8px 0 16px;
 }
 
-.headerIcon {
-	color: var(--color-channel-icon);
+.threadIcon {
+	color: var(--text-muted);
 	flex-shrink: 0;
 }
 
-.headerTitle {
-	color: var(--color-text-primary);
+.threadName {
+	color: var(--text-primary);
 	flex: 1;
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 600;
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.headerStartedBy {
-	color: var(--color-text-muted);
-	font-size: 12px;
-	font-weight: 400;
-}
-
-.headerStartedByAuthor {
-	color: var(--color-text-primary);
-	font-weight: 500;
-}
-
 .closeButton {
+	align-items: center;
 	background: none;
 	border: none;
 	border-radius: 4px;
-	color: var(--color-text-muted);
+	color: var(--text-muted);
 	cursor: pointer;
 	display: flex;
-	align-items: center;
-	justify-content: center;
+	flex-shrink: 0;
 	height: 28px;
-	padding: 0 4px;
+	justify-content: center;
+	padding: 0;
 	width: 28px;
 }
 
 .closeButton:hover {
-	background: var(--color-background-modifier-hover);
-	color: var(--color-text-primary);
+	background: var(--background-modifier-hover);
+	color: var(--text-primary);
 }
 
 .content {
@@ -67,9 +58,4 @@
 	flex-direction: column;
 	min-height: 0;
 	overflow: hidden;
-}
-
-.headerText {
-	flex: 1;
-	min-width: 0;
 }

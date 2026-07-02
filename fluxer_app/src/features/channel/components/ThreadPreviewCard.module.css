@@ -15,12 +15,10 @@
 
 .cardColumn {
 	display: flex;
-	flex: 1;
+	flex: none;
 	flex-direction: column;
-	margin-inline: auto;
 	margin-inline-start: 6px;
-	max-width: 528px;
-	min-width: 0;
+	width: 350px;
 }
 
 .box {
@@ -119,11 +117,12 @@
 	flex: 1;
 	min-width: 0;
 	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .previewSender {
 	color: var(--text-primary);
-	display: inline;
 	font-size: 12px;
 	font-weight: 600;
 }
@@ -135,11 +134,7 @@
 
 .previewMsg {
 	color: var(--text-muted);
-	display: inline;
 	font-size: 12px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
 }
 
 .expiryRow {

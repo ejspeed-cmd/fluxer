@@ -48,6 +48,12 @@ export function isNewMessageGroup(
 	if (currentMessage.type === MessageTypes.REPLY) {
 		return true;
 	}
+	if (currentMessage.threadId) {
+		return true;
+	}
+	if (prevMessage.threadId) {
+		return true;
+	}
 	const currentIsDisplaySystem =
 		currentMessage.type !== MessageTypes.DEFAULT && currentMessage.type !== MessageTypes.REPLY;
 	const prevIsDisplaySystem = prevMessage.type !== MessageTypes.DEFAULT && prevMessage.type !== MessageTypes.REPLY;
