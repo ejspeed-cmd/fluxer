@@ -2,7 +2,6 @@
 
 import {Routes} from '@app/app/Routes';
 import Channels from '@app/features/channel/state/Channels';
-import * as NavigationCommands from '@app/features/navigation/commands/NavigationCommands';
 import {ThreadIcon} from '@app/features/ui/components/icons/ThreadIcon';
 import Accessibility from '@app/features/accessibility/state/Accessibility';
 import {NativeDragRegion} from '@app/features/app/components/layout/NativeDragRegion';
